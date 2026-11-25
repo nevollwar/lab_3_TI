@@ -35,6 +35,7 @@
         <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
         <conv:BoolToVisibilityConverter x:Key="InvBoolToVis" Invert="True" />
         <conv:StringToVisibilityConverter x:Key="StringToVis" />
+        <vm:LoopViewModel x:Key="LoopVM" />
     </Window.Resources>
 
     <Grid>
@@ -256,7 +257,124 @@
                         <TextBox Text="{Binding PostConditionHumanText, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="13" />
                     </StackPanel>
+                    
+                    <!-- Панель данных и управления циклом -->
+                    <Border Margin="0,0,0,18"
+        Background="{StaticResource BgTonal}"
+        CornerRadius="10"
+        Padding="12"
+        DataContext="{StaticResource LoopVM}">
+                        <StackPanel>
+                            <TextBlock Text="Данные и цикл"
+                   FontFamily="{StaticResource DisplayFont}"
+                   FontWeight="SemiBold"
+                   FontSize="14"
+                   Foreground="{StaticResource TextPrimary}"
+                   Margin="0,0,0,10"/>
 
+                            <!-- Генерация массива -->
+                            <WrapPanel Margin="0,0,0,10">
+                                <TextBlock Text="n:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBox Text="{Binding N, UpdateSourceTrigger=PropertyChanged}" Width="40" Margin="0,0,10,0"/>
+                                <TextBlock Text="Min:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBox Text="{Binding Min}" Width="40" Margin="0,0,10,0"/>
+                                <TextBlock Text="Max:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBox Text="{Binding Max}" Width="40" Margin="0,0,10,0"/>
+                                <TextBlock Text="T:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBox Text="{Binding Threshold}" Width="40" Margin="0,0,10,0"/>
+                                <Button Content="Сгенерировать"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding GenerateCommand}"
+                    Padding="8,2"/>
+                            </WrapPanel>
+
+                            <!-- Выбор режима -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="Режим:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <ComboBox SelectedItem="{Binding SelectedMode}" Width="150">
+                                    <ComboBoxItem Content="Сумма префикса" />
+                                    <ComboBoxItem Content="Счётчик > T" />
+                                    <ComboBoxItem Content="Максимум префикса" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Визуализация массива -->
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled"
+                      Margin="0,0,0,10">
+                                <ItemsControl ItemsSource="{Binding Array}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="40" Height="40" Margin="2"
+                                BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                                <Setter Property="Background" Value="LightBlue"/>
+                                                                <Setter Property="BorderBrush" Value="DodgerBlue"/>
+                                                                <Setter Property="BorderThickness" Value="2"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBox Text="{Binding Value, UpdateSourceTrigger=LostFocus}"
+                                     HorizontalContentAlignment="Center"
+                                     VerticalContentAlignment="Center"
+                                     BorderThickness="0"
+                                     Background="Transparent"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <!-- Управление шагами -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <Button Content="Шаг"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding StepCommand}"
+                    Width="60" Margin="0,0,5,0" Padding="4"/>
+                                <Button Content="Пуск"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding RunCommand}"
+                    Width="60" Margin="0,0,5,0" Padding="4"/>
+                                <Button Content="Сброс"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding ResetCommand}"
+                    Width="60" Margin="0,0,10,0" Padding="4"/>
+
+                                <!-- Индикатор постусловия -->
+                                <Border Background="LightGreen"
+                    CornerRadius="4"
+                    Padding="8,4"
+                    Visibility="{Binding IsFinished, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="Post выполнен"
+                           Foreground="Green"
+                           FontWeight="Bold"
+                           FontSize="12"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Текущее состояние -->
+                            <TextBlock FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,5,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="j = {0}, res = {1}, t = {2}">
+                                        <Binding Path="CurrentIndex" Mode="OneWay" />
+                                        <Binding Path="Result" Mode="OneWay" />
+                                        <Binding Path="VariantT" Mode="OneWay" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    
                     <!-- Блок редактора кода -->
                     <Grid Grid.Row="1">
                         <Grid.RowDefinitions>
