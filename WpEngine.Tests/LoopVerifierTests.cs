@@ -5,9 +5,7 @@ using WpEngine.Core.Services;
 
 namespace WpEngine.Tests;
 
-/// <summary>
-/// Модульные тесты для Роли 2 (бэкенд: WpCalculatorEngine, LoopVerifier, проверка 4 условий и Def).
-/// </summary>
+/// <summary>Проверки формул и условий корректности, которые строит LoopVerifier.</summary>
 public class LoopVerifierTests
 {
     private readonly WpCalculatorEngine _wpEngine = new();
@@ -17,7 +15,7 @@ public class LoopVerifierTests
     [InlineData(LoopMode.PrefixSum)]
     [InlineData(LoopMode.CountGreaterThan)]
     [InlineData(LoopMode.PrefixMax)]
-    public void VerifyMode_AllFourConditionsAndDefAreValid(LoopMode mode)
+    public void VerifyMode_ReportsAllConditionsAndTheirTraces(LoopMode mode)
     {
         LoopVerificationReport report = _verifier.VerifyMode(mode);
 
@@ -27,13 +25,13 @@ public class LoopVerifierTests
         Assert.True(report.Exit.IsValid);
         Assert.True(report.Termination.IsValid);
         Assert.True(report.Definedness.IsValid);
-        Assert.Equal(5, report.AllConditions.Count);
+        Assert.Equal(
+            new[] { "Init", "Preservation", "Exit", "Termination", "Def" },
+            report.AllConditions.Select(condition => condition.Id));
 
-        // Проверяем, что wp(S, Inv) реально вычислен и содержит пошаговый трейс
         Assert.NotEmpty(report.WpPreservationResult.Trace);
         Assert.NotEmpty(report.WpVariantDecreaseResult.Trace);
 
-        // Проверяем наличие формулы (Inv ∧ B) ⇒ wp(S, Inv) и русского разбора
         Assert.Contains("⇒", report.PreservationFormula);
         Assert.Contains("Пошаговый расчёт wp(S, Inv)", report.PreservationHumanExplanation);
         Assert.Contains("Разбор формулы словами", report.PreservationHumanExplanation);
@@ -46,7 +44,6 @@ public class LoopVerifierTests
         LoopVerificationReport report = _verifier.VerifyMode(LoopMode.PrefixSum);
         string wpText = report.WpPreservationResult.FinalConditionShort;
 
-        // Подстановка res -> res + a[j], j -> j + 1 и Def (0 <= j && j < n)
         Assert.Contains("0 <= j", wpText);
         Assert.Contains("j < n", wpText);
         Assert.Contains("res + a[j] == sum(a[0..j + 1))", wpText);
@@ -59,7 +56,6 @@ public class LoopVerifierTests
         LoopVerificationReport report = _verifier.VerifyMode(LoopMode.CountGreaterThan);
         string wpText = report.WpPreservationResult.FinalConditionShort;
 
-        // Ветвление if (a[j] > T) даёт дизъюнкцию двух веток + Def (0 <= j && j < n)
         Assert.Contains("0 <= j", wpText);
         Assert.Contains("j < n", wpText);
         Assert.Contains("a[j] > T", wpText);
@@ -78,14 +74,12 @@ public class LoopVerifierTests
         Assert.Contains("1 <= j + 1", wpText);
         Assert.Contains("0 <= j", wpText);
         Assert.Contains("j < n", wpText);
-        // Для PrefixMax предусловие требует n >= 1 (непустой массив)
         Assert.Equal("n >= 1", Humanizer.Format(report.Spec.PreCondition));
     }
 
     [Fact]
     public void WpCalculatorEngine_ExtractsDefForDivisionSqrtAndArrayAccess()
     {
-        // y := sqrt(x) / d + a[j]
         var expr = new BinaryExpr(
             new BinaryExpr(new SqrtExpr(new VariableExpr("x")), BinaryOp.Div, new VariableExpr("d")),
             BinaryOp.Add,
@@ -105,6 +99,8 @@ public class LoopVerifierTests
     }
 
     [Theory]
+    [InlineData((LoopMode)(-1), 1, 0, false)]
+    [InlineData(LoopMode.PrefixSum, -1, 0, false)]
     [InlineData(LoopMode.PrefixSum, 0, 0, true)]
     [InlineData(LoopMode.PrefixSum, 5, 3, true)]
     [InlineData(LoopMode.PrefixSum, 5, -1, false)]
@@ -115,10 +111,93 @@ public class LoopVerifierTests
     [InlineData(LoopMode.PrefixMax, 1, 1, true)]
     [InlineData(LoopMode.PrefixMax, 5, 0, false)]
     [InlineData(LoopMode.PrefixMax, 5, 5, true)]
+    [InlineData(LoopMode.PrefixMax, 5, 6, false)]
     public void CheckDefinednessAtState_ValidatesBoundsCorrectly(
         LoopMode mode, int length, int j, bool expected)
     {
         Assert.Equal(expected, _verifier.CheckDefinednessAtState(mode, length, j));
+    }
+
+    [Theory]
+    [InlineData(LoopMode.PrefixSum)]
+    [InlineData(LoopMode.CountGreaterThan)]
+    [InlineData(LoopMode.PrefixMax)]
+    public void VerifyMode_TerminationUsesNextIndex(LoopMode mode)
+    {
+        var report = _verifier.VerifyMode(mode);
+
+        // t0 — значение варианта до шага.
+        Assert.Contains("n - (j + 1) < t0", report.WpVariantDecreaseResult.FinalConditionShort);
+        Assert.Contains("t0 = n - j", report.Termination.ExpandedFormula);
+        Assert.Contains("n - j ≥ 0", report.Termination.ExpandedFormula);
+    }
+
+    [Fact]
+    public void VerifyMode_PrefixMax_IncludesBoundsForInitializationAndBody()
+    {
+        var report = _verifier.VerifyMode(LoopMode.PrefixMax);
+
+        // При инициализации читаем a[0], а в теле цикла — a[j].
+        Assert.Contains("0 < n", report.Initialization.ExpandedFormula);
+        Assert.Contains("0 < n", report.Definedness.ExpandedFormula);
+        Assert.Contains("0 ≤ j", report.Definedness.ExpandedFormula);
+        Assert.Contains("j < n", report.Definedness.ExpandedFormula);
+    }
+
+    [Fact]
+    public void VerifySpec_UsesProvidedPostconditionInExitFormula()
+    {
+        var postcondition = new CodeParser().ParseCondition("res >= 0");
+        var spec = _verifier.GetSpec(LoopMode.CountGreaterThan) with { PostCondition = postcondition };
+
+        var report = _verifier.VerifySpec(spec);
+
+        Assert.EndsWith("⇒ res ≥ 0", report.Exit.ExpandedFormula);
+    }
+
+    [Theory]
+    [InlineData(true, "Ограничения определённости Def")]
+    [InlineData(false, "Дополнительных ограничений определённости")]
+    public void VerifySpec_UnknownMode_RejectsSpecAndReportsDefinedness(
+        bool bodyReadsArray, string expectedExplanation)
+    {
+        var preset = _verifier.GetSpec(LoopMode.PrefixSum);
+        var spec = preset with { Mode = (LoopMode)(-1) };
+
+        // В теле пресета есть a[j]. Для второго случая оставляем только j := j + 1.
+        if (!bodyReadsArray)
+        {
+            const string bodyCode = "j := j + 1";
+            spec = spec with { LoopBody = new CodeParser().ParseProgram(bodyCode), LoopBodyCode = bodyCode };
+        }
+
+        var report = _verifier.VerifySpec(spec);
+
+        Assert.False(report.AllValid);
+        Assert.False(report.Initialization.IsValid);
+        Assert.False(report.Preservation.IsValid);
+        Assert.False(report.Exit.IsValid);
+        Assert.False(report.Termination.IsValid);
+        Assert.Contains(expectedExplanation, report.Definedness.HumanExplanation);
+    }
+
+    [Fact]
+    public void DescribeFormulaRussian_ExplainsNonStrictComparisonAndInequality()
+    {
+        var condition = new CodeParser().ParseCondition("x >= 0 && x != 1");
+
+        string description = _verifier.DescribeFormulaRussian(condition);
+
+        Assert.Contains("«≥» — больше или равно", description);
+        Assert.Contains("«≠» — не равно", description);
+    }
+
+    [Fact]
+    public void DescribeFormulaRussian_TrueHasNoOperators()
+    {
+        string description = _verifier.DescribeFormulaRussian(new BooleanLiteralCondition(true));
+
+        Assert.Contains("логических операторов нет.", description);
     }
 
     [Fact]
