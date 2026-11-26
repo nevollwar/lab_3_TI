@@ -57,19 +57,19 @@
 ### 1. Режим «Сумма префикса» (`PrefixSum`)
 Пошаговое выполнение, подсветка текущего индекса `j`, зелёные индикаторы инварианта до/после шага, индикатор `Post выполнен` и блок `wp`:
 
-<img width="1914" height="1140" alt="image" src="https://github.com/user-attachments/assets/d78215d9-e781-46f5-8b9c-3c1b185eeab4" />
+<img width="1919" height="1142" alt="image" src="https://github.com/user-attachments/assets/7759ca44-b076-41e1-945f-2f192c7e220f" />
 
 
 ### 2. Режим «Счётчик > T» (`Count > T`)
 Оценка условия ветвления `if (a[j] > T)`, проверка сохранения инварианта через `wp` и словесный разбор формулы на русском языке:
 
-<img width="1915" height="1137" alt="image" src="https://github.com/user-attachments/assets/b3bc34f2-c0a5-4782-b4a0-9997291f0b8a" />
+<img width="1919" height="1137" alt="image" src="https://github.com/user-attachments/assets/16f64c2a-bf37-4e01-ae01-914a7c890ae5" />
 
 
 ### 3. Режим «Максимум префикса» (`PrefixMax`)
 Инициализация с `j = 1` и `res = a[0]`, таблица истории шагов, прогресс-бар и журнал убывания вариант-функции `t`:
 
-<img width="1919" height="1140" alt="image" src="https://github.com/user-attachments/assets/90a99ab5-9231-4db3-aabc-4786c31cac6c" />
+<img width="1918" height="1142" alt="image" src="https://github.com/user-attachments/assets/1c1d381f-dd02-4946-8e78-2cc4742f4ef3" />
 
 
 ### 4. Модульные тесты и покрытие кода (`xUnit` + `Coverlet`)
