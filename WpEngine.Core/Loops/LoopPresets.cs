@@ -74,7 +74,7 @@ public static class LoopPresets
 
         return new LoopSpec(
             Mode: LoopMode.PrefixSum,
-            Name: "Сумма префикса (PrefixSum)",
+            Name: "Сумма транзакций (PrefixSum)",
             InitCode: "res := 0; j := 0;",
             LoopGuardText: "j < n",
             LoopBodyCode: "res += a[j]; j++;",
@@ -86,9 +86,9 @@ public static class LoopPresets
             PostCondition: post,
             VariantExpr: variant,
             InvariantFormula: "res = Σ(a[0..j-1]) ∧ 0 ≤ j ≤ n",
-            InvariantWords: "Переменная res равна сумме первых j элементов массива a[0..j-1], а индекс j лежит в диапазоне от 0 до n.",
+            InvariantWords: "Переменная res равна сумме первых j транзакций a[0..j-1] (в ₽), а индекс j лежит от 0 до n.",
             VariantFormula: "t = n - j",
-            VariantWords: "Количество оставшихся необработанных элементов массива (t ≥ 0, на каждом шаге уменьшается на 1)."
+            VariantWords: "Сколько транзакций осталось обработать (t ≥ 0, уменьшается на 1 на каждом шаге)."
         );
     }
 
@@ -150,7 +150,7 @@ public static class LoopPresets
 
         return new LoopSpec(
             Mode: LoopMode.CountGreaterThan,
-            Name: "Счётчик > T (Count > T)",
+            Name: "Крупные платежи > T (Count > T)",
             InitCode: "res := 0; j := 0;",
             LoopGuardText: "j < n",
             LoopBodyCode: "if (a[j] > T) res++; j++;",
@@ -162,9 +162,9 @@ public static class LoopPresets
             PostCondition: post,
             VariantExpr: variant,
             InvariantFormula: "res = |{i < j : a[i] > T}| ∧ 0 ≤ j ≤ n",
-            InvariantWords: "Переменная res равна количеству элементов префикса a[0..j-1], строго больших порога T, а индекс j лежит в диапазоне от 0 до n.",
+            InvariantWords: "Переменная res равна числу транзакций в a[0..j-1] строго больше порога T ₽, а индекс j лежит от 0 до n.",
             VariantFormula: "t = n - j",
-            VariantWords: "Количество оставшихся необработанных элементов массива (t ≥ 0, на каждом шаге уменьшается на 1)."
+            VariantWords: "Сколько транзакций осталось проверить по порогу T (t ≥ 0, уменьшается на 1 на каждом шаге)."
         );
     }
 
@@ -220,7 +220,7 @@ public static class LoopPresets
 
         return new LoopSpec(
             Mode: LoopMode.PrefixMax,
-            Name: "Максимум префикса (PrefixMax)",
+            Name: "Максимальный платёж (PrefixMax)",
             InitCode: "res := a[0]; j := 1;",
             LoopGuardText: "j < n",
             LoopBodyCode: "res = max(res, a[j]); j++;",
@@ -232,9 +232,9 @@ public static class LoopPresets
             PostCondition: post,
             VariantExpr: variant,
             InvariantFormula: "res = max(a[0..j)) ∧ 1 ≤ j ≤ n",
-            InvariantWords: "Переменная res равна максимуму непустого префикса a[0..j-1], а индекс j лежит в диапазоне от 1 до n.",
+            InvariantWords: "Переменная res равна максимальной сумме среди первых j транзакций a[0..j-1] (в ₽), а индекс j лежит от 1 до n.",
             VariantFormula: "t = n - j",
-            VariantWords: "Количество оставшихся необработанных элементов массива (t ≥ 0, на каждом шаге уменьшается на 1)."
+            VariantWords: "Сколько транзакций осталось сравнить с максимумом (t ≥ 0, уменьшается на 1 на каждом шаге)."
         );
     }
 }

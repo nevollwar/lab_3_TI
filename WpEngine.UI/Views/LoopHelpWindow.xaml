@@ -1,0 +1,292 @@
+<Window x:Class="WpEngine.UI.Views.LoopHelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:math="clr-namespace:WpfMath.Controls;assembly=WpfMath"
+        Title="Справка · Проверка циклов (ЛР-3)"
+        Width="780"
+        Height="700"
+        MinWidth="600"
+        MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BgCanvas}"
+        FontFamily="{StaticResource MainFont}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок окна -->
+        <Border Grid.Row="0"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderBase}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="18,14"
+                Margin="0,0,0,14"
+                Effect="{StaticResource SurfaceShadow}">
+            <StackPanel>
+                <TextBlock Text="СПРАВКА ПО ЛАБОРАТОРНОЙ РАБОТЕ № 3 · АУДИТ ТРАНЗАКЦИЙ БАНКА"
+                           FontFamily="{StaticResource DisplayFont}"
+                           FontWeight="SemiBold"
+                           FontSize="11"
+                           Foreground="{StaticResource BrandPrimary}"
+                           Margin="0,0,0,4" />
+                <TextBlock Text="Циклы под микроскопом: инварианты, вариант-функция и wp"
+                           FontFamily="{StaticResource DisplayFont}"
+                           FontWeight="SemiBold"
+                           FontSize="18"
+                           Foreground="{StaticResource TextPrimary}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <!-- Содержимое справки -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- 1. Сквозной банковский сюжет -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12"
+                        Effect="{StaticResource SurfaceShadow}">
+                    <StackPanel>
+                        <TextBlock Text="1. Сквозной сюжет комплекса (ЛР-1 → ЛР-2 → ЛР-3)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource BrandPrimary}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19">
+                            <Run Text="• ЛР-1 (Платёжный модуль): " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="выполняет клиентские операции (перевод, пополнение с лимитом, оплата услуг) с runtime-контрактами и сохраняет журнал транзакций в SQLite (payment.db)." />
+                            <LineBreak />
+                            <Run Text="• ЛР-2 (Калькулятор wp): " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="статически доказывает слабейшее предусловие wp(P, R) для отдельных банковских формул." />
+                            <LineBreak />
+                            <Run Text="• ЛР-3 (Проверка циклов): " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="выполняет аудит транзакций банка при закрытии банковского дня по массиву a[0..n-1], используя движок wp из ЛР-2 для формального доказательства тотальной корректности цикла." />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- 2. Три режима аудита транзакций банка -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12"
+                        Effect="{StaticResource SurfaceShadow}">
+                    <StackPanel>
+                        <TextBlock Text="2. Режимы аудита транзакций банка (обязательные пресеты)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource BrandPrimary}"
+                                   Margin="0,0,0,10" />
+
+                        <!-- Режим 1: PrefixSum -->
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock FontSize="12.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" Margin="0,0,0,4">
+                                <Run Text="• Сумма транзакций (PrefixSum): " FontWeight="SemiBold" />
+                                <Run Text="init: res := 0; j := 0  |  S: res += a[j]; j++;" FontFamily="{StaticResource CodeFont}" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+                            </TextBlock>
+                            <Border Background="{StaticResource BgRecessed}" BorderBrush="{StaticResource BorderBase}" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                    <math:FormulaControl Formula="\text{Inv}: \text{res} = \sum_{i=0}^{j-1} a[i] \land 0 \le j \le n \;\; | \;\; \text{Pre}: n \ge 0 \;\; | \;\; t = n - j"
+                                                         Scale="13.5"
+                                                         Foreground="#0B57D0"
+                                                         SnapsToDevicePixels="True"
+                                                         UseLayoutRounding="True" />
+                                </Viewbox>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Режим 2: Count > T -->
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock FontSize="12.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" Margin="0,0,0,4">
+                                <Run Text="• Крупные платежи > T (Count > T): " FontWeight="SemiBold" />
+                                <Run Text="init: res := 0; j := 0  |  S: if (a[j] > T) res++; j++;" FontFamily="{StaticResource CodeFont}" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+                            </TextBlock>
+                            <Border Background="{StaticResource BgRecessed}" BorderBrush="{StaticResource BorderBase}" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                    <math:FormulaControl Formula="\text{Inv}: \text{res} = |\{i &lt; j : a[i] &gt; T\}| \land 0 \le j \le n \;\; | \;\; \text{Pre}: n \ge 0 \;\; | \;\; t = n - j"
+                                                         Scale="13.5"
+                                                         Foreground="#0B57D0"
+                                                         SnapsToDevicePixels="True"
+                                                         UseLayoutRounding="True" />
+                                </Viewbox>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Режим 3: PrefixMax -->
+                        <StackPanel>
+                            <TextBlock FontSize="12.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" Margin="0,0,0,4">
+                                <Run Text="• Максимальный платёж (PrefixMax): " FontWeight="SemiBold" />
+                                <Run Text="init: res := a[0]; j := 1  |  S: res = max(res, a[j]); j++;" FontFamily="{StaticResource CodeFont}" FontSize="12" Foreground="{StaticResource TextSecondary}" />
+                            </TextBlock>
+                            <Border Background="{StaticResource BgRecessed}" BorderBrush="{StaticResource BorderBase}" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                    <math:FormulaControl Formula="\text{Inv}: \text{res} = \max(a[0..j)) \land 1 \le j \le n \;\; | \;\; \text{Pre}: n \ge 1 \;\; | \;\; t = n - j"
+                                                         Scale="13.5"
+                                                         Foreground="#0B57D0"
+                                                         SnapsToDevicePixels="True"
+                                                         UseLayoutRounding="True" />
+                                </Viewbox>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 3. Индикаторы инварианта, условия цикла и варианта -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12"
+                        Effect="{StaticResource SurfaceShadow}">
+                    <StackPanel>
+                        <TextBlock Text="3. Как читать индикаторы инварианта, завершения цикла и варианта t"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="#188038"
+                                   Margin="0,0,0,6" />
+                        <TextBlock FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19">
+                            <Run Text="• Индикатор «До шага»: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="виден сразу после инициализации и горит зелёным (✓ Истинен), подтверждая выполнение инварианта Inv до итерации (Pre ⇒ Inv)." />
+                            <LineBreak />
+                            <Run Text="• Индикатор «После шага»: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="горит зелёным (✓ Истинен) на промежуточных шагах (j &lt; n) и становится красным (✗ Цикл завершён · ¬B, j = n) после завершения всех шагов — это сигнализирует об окончании цикла, блокировке кнопки «Шаг» и срабатывании правила выхода (Inv ∧ ¬B) ⇒ Post." />
+                            <LineBreak />
+                            <Run Text="• Вариант-функция t = n − j: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="целое неотрицательное число оставшихся транзакций; на каждом шаге строго убывает на ∆ = −1 (отслеживается прогресс-баром и логом), что гарантирует завершение цикла." />
+                            <LineBreak />
+                            <Run Text="• Бейдж «✓ Post выполнен»: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="появляется на верхней панели после завершения всех шагов и подтверждает истинность постусловия Post." />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- 4. Четыре правила тотальной корректности -->
+                <Border Background="#E6F4EA"
+                        BorderBrush="#A8DAB5"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="4. Четыре условия тотальной корректности + определённость (Def)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="13.5"
+                                   Foreground="#188038"
+                                   Margin="0,0,0,10" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="155" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="1. Инициализация:" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,8,7" />
+                            <Viewbox Grid.Row="0" Grid.Column="1" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,7">
+                                <math:FormulaControl Formula="\text{Pre} \Rightarrow \text{wp}(\text{init}, \text{Inv})"
+                                                     Scale="13.5" Foreground="#137333" SnapsToDevicePixels="True" UseLayoutRounding="True" />
+                            </Viewbox>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="2. Сохранение:" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,8,7" />
+                            <Viewbox Grid.Row="1" Grid.Column="1" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,7">
+                                <math:FormulaControl Formula="(\text{Inv} \land B) \Rightarrow \text{wp}(S, \text{Inv})"
+                                                     Scale="13.5" Foreground="#137333" SnapsToDevicePixels="True" UseLayoutRounding="True" />
+                            </Viewbox>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="3. Выход:" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,8,7" />
+                            <Viewbox Grid.Row="2" Grid.Column="1" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,7">
+                                <math:FormulaControl Formula="(\text{Inv} \land \neg B) \Rightarrow \text{Post}"
+                                                     Scale="13.5" Foreground="#137333" SnapsToDevicePixels="True" UseLayoutRounding="True" />
+                            </Viewbox>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="4. Завершение:" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,8,7" />
+                            <Viewbox Grid.Row="3" Grid.Column="1" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,7">
+                                <math:FormulaControl Formula="(\text{Inv} \land B \Rightarrow t \ge 0) \land (\text{Inv} \land B \Rightarrow \text{wp}(S, t' &lt; t))"
+                                                     Scale="13.5" Foreground="#137333" SnapsToDevicePixels="True" UseLayoutRounding="True" />
+                            </Viewbox>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="5. Определённость:" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Viewbox Grid.Row="4" Grid.Column="1" StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <math:FormulaControl Formula="\text{Def}(a[j]) \Leftrightarrow 0 \le j &lt; n"
+                                                     Scale="13.5" Foreground="#137333" SnapsToDevicePixels="True" UseLayoutRounding="True" />
+                            </Viewbox>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 5. Управление и обозначения -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14">
+                    <StackPanel>
+                        <TextBlock Text="5. Управление и словарь обозначений"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19">
+                            <Run Text="• Переменные: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="a[i] — сумма i-й транзакции (₽); n — число операций в журнале; j — текущий индекс цикла; res — накопленный итог (₽ или шт.); T — порог крупного платежа (₽, используется в режиме Count > T); t = n − j — вариант-функция (число оставшихся шагов)." />
+                            <LineBreak />
+                            <Run Text="• Данные: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="нажмите «Сгенерировать» для создания случайных сумм, кликните по любой ячейке a[i] для ручного редактирования или нажмите «Из ЛР-1», чтобы загрузить реальные операции из базы payment.db." />
+                            <LineBreak />
+                            <Run Text="• Управление: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="«Шаг» — выполнить 1 итерацию; «Пуск» — анимированный прогон до конца; «Сброс» — вернуть цикл в начальное состояние." />
+                            <LineBreak />
+                            <Run Text="• Знаки: " FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" />
+                            <Run Text="∧ (И), ∨ (ИЛИ), ¬ (НЕ), ⇒ (следовательно), ≤ / ≥ / ≠ (сравнения), Σ (сумма), ∆ (изменение t на шаге)." />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопка закрытия -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Закрыть"
+                    Style="{StaticResource PrimaryButton}"
+                    IsDefault="True"
+                    IsCancel="True"
+                    Click="CloseButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

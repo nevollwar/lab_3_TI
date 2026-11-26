@@ -20,11 +20,11 @@ public static class ReportExportService
 
         sb.AppendLine("# Отчёт по лабораторной работе № 2");
         sb.AppendLine();
-        sb.AppendLine("## Вычисление слабейшего предусловия `wp(P, R)`");
+        sb.AppendLine("## Вычисление слабейшего предусловия `wp(P, R)` · Верификация банковских контрактов");
         sb.AppendLine();
         sb.AppendLine("| | |");
         sb.AppendLine("|---|---|");
-        sb.AppendLine("| **Дисциплина** | Теоретичсекая информатика |");
+        sb.AppendLine("| **Дисциплина** | Теоретическая информатика |");
         sb.AppendLine("| **Университет** | ТвГТУ |");
         sb.AppendLine("| **Группа** | Б.ПИН.ИИ.25.16 |");
         sb.AppendLine("| **Дата** | " + date + " |");

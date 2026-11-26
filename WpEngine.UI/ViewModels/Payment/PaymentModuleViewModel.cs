@@ -24,8 +24,13 @@ public class PaymentModuleViewModel : ViewModelBase
     public Bank Bank { get; }
 
     public PaymentModuleViewModel()
+        : this(PersistentBank.Create("payment.db"))
     {
-        Bank = PersistentBank.Create("payment.db");
+    }
+
+    public PaymentModuleViewModel(Bank bank)
+    {
+        Bank = bank ?? throw new ArgumentNullException(nameof(bank));
 
         Operations = new ObservableCollection<OperationViewModelBase>
         {

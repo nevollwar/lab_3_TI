@@ -315,67 +315,67 @@ public class MainViewModel : ViewModelBase
     {
         Presets.Add(new PresetModel
         {
-            Id = "max",
-            Title = "1. Максимум из двух",
-            Subtitle = "Ветвление if-else",
-            Description = "Постусловие max > 100 проводится через условный оператор выбора максимума.",
-            RealLifeAnalogy = "Покупатель применяет лучший из двух купонов на скидку (x1 или x2). Чтобы итоговая скидка max превысила 100 ₽, выбранный (наибольший) купон обязан быть больше 100 ₽.",
-            Code = "if (x1 >= x2) {\n    max := x1;\n} else {\n    max := x2;\n}",
-            PostConditionShort = "max > 100",
-            PostConditionHuman = "Значение переменной max больше 100",
-            ExpectedWp = "((x1 >= x2 && x1 > 100) || (!(x1 >= x2) && x2 > 100))"
+            Id = "transfer",
+            Title = "1. Перевод (инвариант ЛР-1)",
+            Subtitle = "Последовательность S1; S2 · Bank.Transfer",
+            Description = "Двухшаговый перевод со счёта на счёт с проверкой отсутствия овердрафта и инварианта общей суммы балансов.",
+            RealLifeAnalogy = "Прямая связь с ЛР-1 (Bank.Transfer): перевод со счёта Иванова (srcBal) на счёт Петрова (dstBal). Постусловие требует, чтобы счёт списания не ушёл в минус, а суммарный баланс банка total не изменился.",
+            Code = "srcBal := srcBal - amount;\ndstBal := dstBal + amount;",
+            PostConditionShort = "(srcBal >= 0) && (srcBal + dstBal == total)",
+            PostConditionHuman = "Счёт списания не ушёл в минус и сохранилась сумма балансов банка",
+            ExpectedWp = "(srcBal - amount >= 0) && ((srcBal - amount) + (dstBal + amount) == total)"
         });
 
         Presets.Add(new PresetModel
         {
-            Id = "quadratic",
-            Title = "2. Квадратное ур-е",
-            Subtitle = "Деление и условие определенности",
-            Description = "Ветвление по дискриминанту D с делением на (2*a) и проверкой знаменателя != 0.",
-            RealLifeAnalogy = "Бортовой компьютер считает тормозной путь через деление на 2*a (ускорение). Если a = 0, произойдёт сбой деления на ноль — поэтому wp заранее требует, чтобы 2*a ≠ 0.",
-            Code = "if (D >= 0) {\n    x := (0 - b + d) / (2 * a);\n} else {\n    err := 1;\n}",
-            PostConditionShort = "(x > 0) || (err == 1)",
-            PostConditionHuman = "Корень x положителен при D >= 0, либо установлен флаг ошибки err = 1",
-            ExpectedWp = "((D >= 0 && ((2 * a != 0) && ...)) || (!(D >= 0) && ...))"
-        });
-
-        Presets.Add(new PresetModel
-        {
-            Id = "sequence",
-            Title = "3. Цепочка шагов",
-            Subtitle = "Последовательность S1; S2",
-            Description = "Постусловие проводится с конца через x := x + 10 и затем через y := x + 1.",
-            RealLifeAnalogy = "Конвейер доставки: к весу товара x сначала добавляют тубус (+1 кг для y), а затем паллету (+10 кг к x). Чтобы итоговый вес превысил 15 кг, исходный товар должен весить строго больше 5 кг.",
-            Code = "y := x + 1;\nx := x + 10;",
-            PostConditionShort = "(y == x - 9) && (x > 15)",
-            PostConditionHuman = "Переменная y равна (x - 9) и x больше 15",
-            ExpectedWp = "x > 5"
+            Id = "limit",
+            Title = "2. Выбор лимита карты",
+            Subtitle = "Ветвление if-else · DailyLimitAccount",
+            Description = "Выбор наибольшего из базового и акционного лимита операции с проверкой покрытия крупного перевода.",
+            RealLifeAnalogy = "Связь с ЛР-1 (DailyLimitAccount): система сравнивает базовый лимит карты baseLimit и промо-лимит promoLimit. Чтобы одобрить крупный перевод свыше 5000 ₽, выбранный максимум обязан превышать 5000 ₽.",
+            Code = "if (baseLimit >= promoLimit) {\n    limit := baseLimit;\n} else {\n    limit := promoLimit;\n}",
+            PostConditionShort = "limit > 5000",
+            PostConditionHuman = "Одобренный лимит карты превышает 5000 ₽",
+            ExpectedWp = "((baseLimit >= promoLimit && baseLimit > 5000) || (!(baseLimit >= promoLimit) && promoLimit > 5000))"
         });
 
         Presets.Add(new PresetModel
         {
             Id = "cashback",
-            Title = "4. Оплата и кэшбэк",
-            Subtitle = "Жизненный пример: банковская карта",
-            Description = "При покупке от 1000 ₽ начисляется мгновенный кэшбэк 50 ₽, иначе списывается полная сумма.",
-            RealLifeAnalogy = "Оплата картой в супермаркете: если чек amount ≥ 1000 ₽, банк сразу возвращает 50 ₽ кэшбэка, поэтому на карте до оплаты достаточно иметь (amount - 50) ₽, чтобы не уйти в овердрафт.",
+            Title = "3. Оплата услуги и кэшбэк",
+            Subtitle = "Ветвление if-else · Bank.PayService",
+            Description = "При оплате услуги от 1000 ₽ начисляется мгновенный кэшбэк 50 ₽, иначе списывается полная сумма.",
+            RealLifeAnalogy = "Связь с ЛР-1 (Bank.PayService): при оплате интернета или ЖКУ от 1000 ₽ банк сразу возвращает 50 ₽ кэшбэка, поэтому до операции достаточно иметь (amount - 50) ₽, чтобы не уйти в овердрафт.",
             Code = "if (amount >= 1000) {\n    balance := balance - amount + 50;\n} else {\n    balance := balance - amount;\n}",
             PostConditionShort = "balance >= 0",
-            PostConditionHuman = "Баланс карты после покупки не ушёл в минус (без овердрафта)",
+            PostConditionHuman = "Баланс карты после оплаты услуги не ушёл в минус (без овердрафта)",
             ExpectedWp = "(amount >= 1000 && balance - amount + 50 >= 0) || (!(amount >= 1000) && balance - amount >= 0)"
         });
 
         Presets.Add(new PresetModel
         {
-            Id = "speed",
-            Title = "5. Средняя скорость",
-            Subtitle = "Жизненный пример: камера на трассе",
-            Description = "Расчёт средней скорости автомобиля v = dist / time с защитой от деления на ноль.",
-            RealLifeAnalogy = "Дорожная камера замеряет среднюю скорость на участке: делит расстояние dist на время time. Чтобы расчёт был корректен и водитель не получил штраф, нужно time ≠ 0 и dist / time ≤ 90 км/ч.",
-            Code = "speed := dist / time;",
-            PostConditionShort = "(speed <= 90) && (speed > 0)",
-            PostConditionHuman = "Средняя скорость автомобиля в пределах от 0 до 90 км/ч",
-            ExpectedWp = "time != 0 && (dist / time <= 90 && dist / time > 0)"
+            Id = "installment",
+            Title = "4. Рассрочка платежа (Def)",
+            Subtitle = "Ветвление, деление и условие определённости",
+            Description = "Проверка первого взноса и расчёт ежемесячного платежа (amount - firstPay) / months с защитой months ≠ 0.",
+            RealLifeAnalogy = "Банковский скоринг рассрочки: если баланса хватает на первый взнос firstPay, остаток делится на число месяцев months (wp автоматически требует months ≠ 0), иначе выставляется код отказа err = 1.",
+            Code = "if (balance >= firstPay) {\n    monthly := (amount - firstPay) / months;\n} else {\n    err := 1;\n}",
+            PostConditionShort = "(monthly <= 5000) || (err == 1)",
+            PostConditionHuman = "Ежемесячный платёж не превышает 5000 ₽ при достаточном взносе, либо выставлен отказ err = 1",
+            ExpectedWp = "((balance >= firstPay && (months != 0 && ((amount - firstPay) / months <= 5000 || err == 1))) || (!(balance >= firstPay) && (monthly <= 5000 || 1 == 1)))"
+        });
+
+        Presets.Add(new PresetModel
+        {
+            Id = "avgCheck",
+            Title = "5. Средний чек дня (→ ЛР-3)",
+            Subtitle = "Деление и Def · Мост к аудиту транзакций",
+            Description = "Расчёт среднего чека по обороту дня totalSum и числу транзакций txCount с защитой от пустой выписки.",
+            RealLifeAnalogy = "Мостик к ЛР-3 (аудит транзакций): при подведении итогов банковского дня суммарный оборот totalSum делится на число операций txCount. Чтобы отчёт не упал при пустом журнале и уложился в дневной лимит 15 000 ₽, wp требует txCount ≠ 0 и 0 < totalSum / txCount ≤ 15000.",
+            Code = "avgTx := totalSum / txCount;",
+            PostConditionShort = "(avgTx > 0) && (avgTx <= 15000)",
+            PostConditionHuman = "Средний чек транзакций за день положителен и не превышает 15 000 ₽",
+            ExpectedWp = "txCount != 0 && (totalSum / txCount > 0 && totalSum / txCount <= 15000)"
         });
     }
 
@@ -395,13 +395,13 @@ public class MainViewModel : ViewModelBase
 
         if (string.IsNullOrWhiteSpace(PostConditionText))
         {
-            SetGeneralError("Поле постусловия пусто", "Введите целевое постусловие R (например, x > 0).");
+            SetGeneralError("Поле постусловия пусто", "Введите целевое постусловие R (например, balance >= 0).");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(ProgramCodeText))
         {
-            SetCodeError(1, 1, "Введите хотя бы один оператор программы (например, x := a + 1;).", string.Empty);
+            SetCodeError(1, 1, "Введите хотя бы один оператор программы (например, balance := balance - amount;).", string.Empty);
             return;
         }
 
@@ -458,7 +458,7 @@ public class MainViewModel : ViewModelBase
             for (int i = 0; i < result.Trace.Count; i++)
             {
                 var step = result.Trace[i];
-                bool isDiv = step.Description.Contains("деления") || step.IntermediateCondition.Contains("≠") || step.IntermediateCondition.Contains("!= 0");
+                bool isDiv = step.Description.Contains("деления");
                 if (isDiv) foundDiv = true;
 
                 string stepLatex;
@@ -516,26 +516,26 @@ public class MainViewModel : ViewModelBase
     {
         if (statementCode.StartsWith("if "))
         {
-            return "Развилка маршрута: как на навигаторе — независимо от того, по какой дороге (Then или Else) пойдёт выполнение, мы должны гарантированно приехать в целевую точку R.";
+            return "Ветвление банковского правила: независимо от того, по какой ветке (Then или Else) пойдёт обработка операции — например, с кэшбэком или по обычному тарифу — контракт гарантирует выполнение цели R.";
         }
         if (isDiv)
         {
-            return "Деление с проверкой безопасности: как при разделении счёта в ресторане на несколько человек — сначала убеждаемся, что число участников не равно 0, и только потом подставляем формулу.";
+            return "Деление с проверкой определённости: как при расчёте ежемесячного платежа по рассрочке или среднего чека по журналу транзакций — сначала убеждаемся, что делитель не равен 0, и только потом подставляем формулу.";
         }
-        return "Шаг назад во времени: мы знаем, каким должно быть значение после этого присваивания, поэтому заменяем переменную на её формулу и узнаём требование ДО выполнения строки.";
+        return "Обратный проход по проводке: зная целевое состояние счёта после этой строки, мы подставляем формулу присваивания вместо переменной и получаем точное требование ДО операции.";
     }
 
     private static string BuildCustomRealLifeAnalogy(Statement programAst, bool foundDiv)
     {
         if (foundDiv)
         {
-            return "Как расчёт средней скорости или деление бюджета: формула работает только тогда, когда делитель не равен нулю, а входные значения заранее укладываются в целевой коридор.";
+            return "Как расчёт платежа по рассрочке или среднего чека дня: формула корректна только тогда, когда делитель (число месяцев или транзакций) не равен нулю, а входные суммы укладываются в заданный лимит.";
         }
         if (programAst is IfStatement)
         {
-            return "Как правило оплаты с условием (например, обычный тариф или скидка): движок проверяет обе ветки и выводит точные условия на входе для каждого сценария.";
+            return "Как проверка тарифа или дневного лимита счёта: движок анализирует обе ветки банковского правила и выводит точные предусловия на стартовый баланс для каждого сценария.";
         }
-        return "Как обратное планирование ко времени отправления поезда: зная финальную цель, мы шаг за шагом отматываем действия назад и находим, с чего нужно начать.";
+        return "Как обратная сверка банковской выписки: зная целевой остаток после серии списаний и зачислений, мы шаг за шагом отматываем проводки назад и находим минимальный начальный баланс.";
     }
 
     private static string FormatLowerFirst(string text)

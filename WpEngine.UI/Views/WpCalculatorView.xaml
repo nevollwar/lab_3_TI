@@ -48,7 +48,7 @@
 
             <!-- Заголовок -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
-                <TextBlock Text="Калькулятор слабейшего предусловия"
+                <TextBlock Text="Калькулятор слабейшего предусловия · Контракты банка"
                            FontFamily="{StaticResource DisplayFont}"
                            FontWeight="SemiBold"
                            FontSize="16.5"
@@ -73,8 +73,8 @@
                                            LineHeight="17" />
                                 <Border Background="{StaticResource BgTonal}" CornerRadius="8" Padding="10,8" Margin="0,8,0,0">
                                     <StackPanel>
-                                        <TextBlock Text="Пример из жизни" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
-                                        <TextBlock Text="Поезд отправляется в 19:00 (цель R), дорога занимает 40 минут (программа P). Слабейшее предусловие wp — выйти из дома не позже 18:20."
+                                        <TextBlock Text="Банковский пример" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
+                                        <TextBlock Text="После оплаты услуги на 1200 ₽ с мгновенным кэшбэком 50 ₽ (программа P) баланс карты не должен уйти в минус (цель R: balance ≥ 0). Слабейшее предусловие wp — иметь до оплаты не менее 1150 ₽."
                                                    FontSize="11.5"
                                                    Foreground="{StaticResource TextPrimary}"
                                                    TextWrapping="Wrap"
@@ -124,7 +124,7 @@
                                                    LineHeight="17" />
                                         <Border Background="{StaticResource BgTonal}" CornerRadius="8" Padding="10,8" Margin="0,8,0,0">
                                             <StackPanel>
-                                                <TextBlock Text="Пример из жизни" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
+                                                <TextBlock Text="Банковский контекст" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
                                                 <TextBlock Text="{Binding RealLifeAnalogy}"
                                                            FontSize="11.5"
                                                            Foreground="{StaticResource TextPrimary}"
@@ -226,8 +226,8 @@
                                             <TextBlock Text="Логическое условие, которое обязано выполняться после завершения программы. Поддерживаются &gt;, &lt;, &gt;=, &lt;=, ==, !=, &amp;&amp;, ||, !." FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" LineHeight="17" />
                                             <Border Background="{StaticResource BgTonal}" CornerRadius="8" Padding="10,8" Margin="0,8,0,0">
                                                 <StackPanel>
-                                                    <TextBlock Text="Пример из жизни" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
-                                                    <TextBlock Text="После оплаты покупки баланс карты не должен уйти в минус (balance &gt;= 0)." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
+                                                    <TextBlock Text="Банковский пример" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
+                                                    <TextBlock Text="После списания оплаты баланс счёта не должен уйти в овердрафт (balance &gt;= 0)." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
@@ -279,7 +279,7 @@
                                             <TextBlock Text="Присваивания (x := e) и ветвления if (B) { S1 } else { S2 }. Анализируется снизу вверх: от последней строки к первой." FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" LineHeight="17" />
                                             <Border Background="{StaticResource BgTonal}" CornerRadius="8" Padding="10,8" Margin="0,8,0,0">
                                                 <StackPanel>
-                                                    <TextBlock Text="Пример из жизни" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
+                                                    <TextBlock Text="Банковский пример" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
                                                     <TextBlock Text="Как банковская выписка: чтобы узнать, сколько денег было до покупок, мы отматываем операции списания и кэшбэка от конца к началу." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
                                                 </StackPanel>
                                             </Border>
@@ -399,12 +399,12 @@
 
                             <Button Content=":=" Style="{StaticResource SmallButton}" Margin="0,0,6,0"
                                     ToolTipService.Placement="Top" ToolTipService.VerticalOffset="-6"
-                                    Command="{Binding InsertSnippetCommand}" CommandParameter="x := ">
+                                    Command="{Binding InsertSnippetCommand}" CommandParameter="balance := balance - amount;">
                                 <Button.ToolTip>
                                     <ToolTip>
                                         <StackPanel>
                                             <TextBlock Text="Присваивание (x := e)" FontFamily="{StaticResource DisplayFont}" FontWeight="SemiBold" FontSize="12.5" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,3" />
-                                            <TextBlock Text="Заменяет переменную x в постусловии R на выражение e." FontSize="11.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" />
+                                            <TextBlock Text="Вставляет шаблон списания со счёта и заменяет переменную в постусловии R на выражение e." FontSize="11.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" />
                                         </StackPanel>
                                     </ToolTip>
                                 </Button.ToolTip>
@@ -412,7 +412,7 @@
 
                             <Button Content="if-else" Style="{StaticResource SmallButton}" Margin="0,0,6,0"
                                     ToolTipService.Placement="Top" ToolTipService.VerticalOffset="-6"
-                                    Command="{Binding InsertSnippetCommand}" CommandParameter="if (x &gt;= 0) {&#x0a;    y := 1;&#x0a;} else {&#x0a;    y := 0;&#x0a;}">
+                                    Command="{Binding InsertSnippetCommand}" CommandParameter="if (balance &gt;= amount) {&#x0a;    balance := balance - amount;&#x0a;} else {&#x0a;    err := 1;&#x0a;}">
                                 <Button.ToolTip>
                                     <ToolTip>
                                         <StackPanel>
@@ -528,7 +528,7 @@
                                    Foreground="{StaticResource TextPrimary}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,6" />
-                        <TextBlock Text="Выберите один из примеров сверху или введите свой код слева и нажмите «Рассчитать wp»."
+                        <TextBlock Text="Выберите один из банковских контрактов сверху или введите свой фрагмент кода слева и нажмите «Рассчитать wp»."
                                    FontSize="13.5"
                                    Foreground="{StaticResource TextSecondary}"
                                    TextAlignment="Center"
@@ -601,14 +601,14 @@
                                                LineHeight="18"
                                                Margin="0,0,0,10" />
 
-                                    <!-- Наглядная карточка: Пример из жизни -->
+                                    <!-- Наглядная карточка: Банковский контекст -->
                                     <Border Background="#FFFFFF"
                                             BorderBrush="#D3E3FD"
                                             BorderThickness="1"
                                             CornerRadius="10"
                                             Padding="13,10">
                                         <StackPanel>
-                                            <TextBlock Text="Аналогия из жизни"
+                                            <TextBlock Text="Банковский контекст"
                                                        FontFamily="{StaticResource DisplayFont}"
                                                        FontWeight="SemiBold"
                                                        FontSize="12"
@@ -650,8 +650,8 @@
                                                             <TextBlock Text="Контракт корректности: если до старта выполнено {Pre}, то после выполнения кода P гарантированно выполняется {Post}." FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" LineHeight="17" />
                                                             <Border Background="{StaticResource BgTonal}" CornerRadius="8" Padding="10,8" Margin="0,8,0,0">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="Пример из жизни" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
-                                                                    <TextBlock Text="{}{Pre: есть билет и паспорт} → P: посадка и рейс → {Post: пассажир прилетел в пункт назначения}." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
+                                                                    <TextBlock Text="Банковский пример" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
+                                                                    <TextBlock Text="{}{Pre: balance ≥ amount} → P: списание оплаты → {Post: balance ≥ 0}." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
                                                                 </StackPanel>
                                                             </Border>
                                                         </StackPanel>
@@ -711,8 +711,8 @@
                                                 <TextBlock Text="Мы берём целевое постусловие R и поднимаемся вверх по строкам программы от последнего оператора к первому." FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" LineHeight="17" />
                                                 <Border Background="{StaticResource BgTonal}" CornerRadius="8" Padding="10,8" Margin="0,8,0,0">
                                                     <StackPanel>
-                                                        <TextBlock Text="Пример из жизни" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
-                                                        <TextBlock Text="Вылет в 12:00 → конец посадки в 11:20 → быть в аэропорту к 10:00 → выехать на такси в 09:15." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
+                                                        <TextBlock Text="Банковский пример" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" Margin="0,0,0,2" />
+                                                        <TextBlock Text="Целевой остаток ≥ 0 ₽ → отменяем возврат кэшбэка 50 ₽ → отменяем списание перевода и комиссии → получаем минимальный начальный баланс." FontSize="11.5" Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" LineHeight="16" />
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>

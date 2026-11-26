@@ -17,6 +17,11 @@ namespace PaymentApp.Domain
         private readonly ITransactionRepository transactionRepository;
 
         /// <summary>
+        /// Событие, возникающее после успешного сохранения новой операции в БД.
+        /// </summary>
+        public event Action? TransactionsChanged;
+
+        /// <summary>
         /// Создаёт PersistentBank из существующих репозиториев.
         /// Счета загружаются из БД.
         /// </summary>
@@ -28,6 +33,11 @@ namespace PaymentApp.Domain
             this.accountRepository = accountRepository;
             this.transactionRepository = transactionRepository;
         }
+
+        /// <summary>
+        /// Возвращает все сохранённые в БД транзакции для аудита и верификации.
+        /// </summary>
+        public IReadOnlyList<TransactionEntity> GetPersistedTransactions() => transactionRepository.FindAll();
 
         /// <summary>
         /// Создаёт PersistentBank с SQLite базой данных по указанному пути.
@@ -69,6 +79,8 @@ namespace PaymentApp.Domain
                 Amount = result.Record.Amount
             });
 
+            TransactionsChanged?.Invoke();
+
             return result;
         }
 
@@ -80,6 +92,17 @@ namespace PaymentApp.Domain
 
             // Синхронизируем баланс и дневной лимит в БД
             SaveAccount(account);
+
+            // Сохраняем запись о пополнении в журнал транзакций
+            transactionRepository.Insert(new TransactionEntity
+            {
+                Timestamp = DateTime.Now,
+                FromAccount = "Пополнение",
+                ToAccount = account.Number,
+                Amount = amount
+            });
+
+            TransactionsChanged?.Invoke();
 
             return result;
         }
@@ -101,6 +124,8 @@ namespace PaymentApp.Domain
                 ToAccount = $"Поставщик: {serviceName}",
                 Amount = result.TotalCharged
             });
+
+            TransactionsChanged?.Invoke();
 
             return result;
         }

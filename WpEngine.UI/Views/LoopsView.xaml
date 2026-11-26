@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:WpEngine.UI.ViewModels"
              xmlns:conv="clr-namespace:WpEngine.UI.Converters"
+             xmlns:math="clr-namespace:WpfMath.Controls;assembly=WpfMath"
              mc:Ignorable="d"
              d:DesignHeight="820" d:DesignWidth="1240"
              Background="{StaticResource BgCanvas}"
@@ -30,6 +31,70 @@
                                           TrueText="Все условия ок" FalseText="Есть нарушения" />
         <conv:BoolToStringConverter       x:Key="BoolToYesNo"
                                           TrueText="✓" FalseText="✗" />
+
+        <!-- Компактный Expander для однострочных карточек условий корректности -->
+        <Style x:Key="CompactConditionExpander" TargetType="Expander">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Expander">
+                        <StackPanel>
+                            <ToggleButton x:Name="HeaderToggle"
+                                          IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Cursor="Hand"
+                                          HorizontalContentAlignment="Stretch"
+                                          Focusable="False">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Grid Background="Transparent">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Path x:Name="Arrow"
+                                                  Grid.Column="0"
+                                                  Data="M 1,0 L 6,4 L 1,8 Z"
+                                                  Fill="{StaticResource TextMuted}"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left" />
+                                            <ContentPresenter Grid.Column="1"
+                                                              Content="{TemplateBinding Content}"
+                                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                              HorizontalAlignment="Stretch"
+                                                              VerticalAlignment="Center" />
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Arrow" Property="Data" Value="M 0,1 L 8,1 L 4,6 Z" />
+                                                <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource BrandPrimary}" />
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource BrandPrimary}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <ContentPresenter x:Name="ExpandSite"
+                                              Visibility="Collapsed"
+                                              Margin="16,8,0,2" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -46,40 +111,15 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Заголовок и подсказка -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
-                <TextBlock Text="Верификатор циклов (инварианты, вариант, wp)"
-                           FontFamily="{StaticResource DisplayFont}"
-                           FontWeight="SemiBold"
-                           FontSize="16.5"
-                           Foreground="{StaticResource TextPrimary}"
-                           VerticalAlignment="Center" />
-
-                <Border Style="{StaticResource HintBadge}" Margin="10,0,0,0">
-                    <TextBlock Text="(Inv ∧ B) ⇒ wp(S, Inv) ?"
-                               FontFamily="{StaticResource CodeFont}"
-                               FontWeight="SemiBold"
-                               FontSize="11.5"
-                               Foreground="{StaticResource BrandPrimary}" />
-                    <Border.ToolTip>
-                        <ToolTip Placement="Bottom" VerticalOffset="6">
-                            <StackPanel>
-                                <TextBlock Text="Тотальная корректность цикла"
-                                           FontFamily="{StaticResource DisplayFont}"
-                                           FontWeight="SemiBold"
-                                           FontSize="13"
-                                           Foreground="{StaticResource TextPrimary}"
-                                           Margin="0,0,0,4" />
-                                <TextBlock Text="Для доказательства корректности цикла проверяются инициализация инварианта Inv, сохранение Inv после тела цикла через wp(S, Inv), достижение постусловия при выходе (Inv ∧ ¬B ⇒ Post), а также ограниченность и строгое убывание вариант-функции t."
-                                           FontSize="12"
-                                           Foreground="{StaticResource TextSecondary}"
-                                           TextWrapping="Wrap"
-                                           LineHeight="17" />
-                            </StackPanel>
-                        </ToolTip>
-                    </Border.ToolTip>
-                </Border>
-            </StackPanel>
+            <!-- Заголовок -->
+            <TextBlock Grid.Column="0"
+                       Text="Проверка циклов · Транзакции банка"
+                       FontFamily="{StaticResource DisplayFont}"
+                       FontWeight="SemiBold"
+                       FontSize="16.5"
+                       Foreground="{StaticResource TextPrimary}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,16,0" />
 
             <!-- Выбор режима, быстрые кнопки и бейдж Post -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -93,29 +133,36 @@
                           SelectedValuePath="Mode"
                           SelectedValue="{Binding SelectedMode}"
                           DisplayMemberPath="DisplayName"
-                          Width="185"
+                          Width="220"
                           Padding="10,6"
                           VerticalContentAlignment="Center"
                           FontSize="13"
-                          Margin="0,0,12,0" />
+                          Margin="0,0,10,0" />
 
                 <Button Content="Шаг"
                         Style="{StaticResource TonalButton}"
                         Command="{Binding StepCommand}"
-                        Padding="16,7"
+                        Padding="14,7"
                         FontSize="13"
-                        Margin="0,0,8,0" />
+                        Margin="0,0,6,0" />
                 <Button Content="Пуск"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding RunCommand}"
-                        Padding="18,7"
+                        Padding="16,7"
                         FontSize="13"
-                        Margin="0,0,8,0" />
+                        Margin="0,0,6,0" />
                 <Button Content="Сброс"
                         Style="{StaticResource SecondaryButton}"
                         Command="{Binding ResetCommand}"
-                        Padding="16,7"
-                        FontSize="13" />
+                        Padding="14,7"
+                        FontSize="13"
+                        Margin="0,0,6,0" />
+                <Button Content="? Справка"
+                        Style="{StaticResource SecondaryButton}"
+                        Click="HelpButton_Click"
+                        Padding="12,7"
+                        FontSize="13"
+                        ToolTip="Открыть подробную справку по ЛР-3: режимы, инварианты, индикаторы и правила корректности" />
 
                 <Border Background="#CEEAD6"
                         BorderBrush="#A8DAB5"
@@ -153,81 +200,87 @@
                               Padding="22,20">
                     <StackPanel>
 
-                        <!-- 1. Панель «Данные и массив» -->
+                        <!-- 1. Панель «Журнал транзакций» -->
                         <Border Background="{StaticResource BgTonal}"
                                 CornerRadius="12"
                                 Padding="16,14"
                                 Margin="0,0,0,16">
                             <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <TextBlock Text="Данные и массив"
-                                               FontFamily="{StaticResource DisplayFont}"
-                                               FontWeight="SemiBold"
-                                               FontSize="14.5"
-                                               Foreground="{StaticResource TextPrimary}"
-                                               VerticalAlignment="Center" />
-                                    <Border Style="{StaticResource HintBadge}" HorizontalAlignment="Right">
-                                        <TextBlock Text="? редактирование"
-                                                   FontSize="11"
-                                                   FontWeight="Medium"
-                                                   Foreground="{StaticResource BrandPrimary}" />
-                                        <Border.ToolTip>
-                                            <ToolTip>
-                                                <TextBlock Text="Любое значение a[i] можно изменить вручную прямо в ячейке; после выхода из поля цикл автоматически обновится."
-                                                           FontSize="12"
-                                                           Foreground="{StaticResource TextSecondary}"
-                                                           TextWrapping="Wrap"
-                                                           LineHeight="17" />
-                                            </ToolTip>
-                                        </Border.ToolTip>
-                                    </Border>
-                                </Grid>
+                                <TextBlock Text="Журнал транзакций"
+                                           FontFamily="{StaticResource DisplayFont}"
+                                           FontWeight="SemiBold"
+                                           FontSize="14.5"
+                                           Foreground="{StaticResource TextPrimary}"
+                                           Margin="0,0,0,4" />
 
-                                <!-- Параметры генератора -->
-                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,12" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
-                                        <TextBlock Text="n:" VerticalAlignment="Center" Margin="0,0,5,0"
+                                <TextBlock Text="{Binding ScenarioContext}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           TextWrapping="Wrap"
+                                           LineHeight="17"
+                                           Margin="0,0,0,10" />
+
+                                <!-- Строка A: параметры генератора с понятными подписями и подсказками -->
+                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,8" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                                ToolTip="n — сколько транзакций сгенерировать в журнале (от 1 до 50)">
+                                        <TextBlock Text="Операций (n):" VerticalAlignment="Center" Margin="0,0,5,0"
                                                    FontSize="12.5" Foreground="{StaticResource TextSecondary}" />
                                         <TextBox Text="{Binding N, UpdateSourceTrigger=PropertyChanged}"
-                                                 Width="46" Padding="6,5" FontSize="13"
+                                                 Width="44" Padding="6,5" FontSize="13"
                                                  FontFamily="{StaticResource CodeFont}"
                                                  HorizontalContentAlignment="Center" />
                                     </StackPanel>
 
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
-                                        <TextBlock Text="Min:" VerticalAlignment="Center" Margin="0,0,5,0"
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                                ToolTip="Min — минимальная сумма случайной транзакции в ₽">
+                                        <TextBlock Text="От (₽):" VerticalAlignment="Center" Margin="0,0,5,0"
                                                    FontSize="12.5" Foreground="{StaticResource TextSecondary}" />
                                         <TextBox Text="{Binding Min}"
-                                                 Width="48" Padding="6,5" FontSize="13"
+                                                 Width="56" Padding="6,5" FontSize="13"
                                                  FontFamily="{StaticResource CodeFont}"
                                                  HorizontalContentAlignment="Center" />
                                     </StackPanel>
 
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
-                                        <TextBlock Text="Max:" VerticalAlignment="Center" Margin="0,0,5,0"
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,12,4"
+                                                ToolTip="Max — максимальная сумма случайной транзакции в ₽">
+                                        <TextBlock Text="До (₽):" VerticalAlignment="Center" Margin="0,0,5,0"
                                                    FontSize="12.5" Foreground="{StaticResource TextSecondary}" />
                                         <TextBox Text="{Binding Max}"
-                                                 Width="48" Padding="6,5" FontSize="13"
+                                                 Width="56" Padding="6,5" FontSize="13"
                                                  FontFamily="{StaticResource CodeFont}"
                                                  HorizontalContentAlignment="Center" />
                                     </StackPanel>
 
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,12,6">
-                                        <TextBlock Text="T (порог):" VerticalAlignment="Center" Margin="0,0,5,0"
+                                    <StackPanel Orientation="Horizontal"
+                                                Margin="0,0,0,4"
+                                                Visibility="{Binding IsThresholdVisible, Converter={StaticResource BoolToVis}}"
+                                                ToolTip="T — порог контроля: считаются все транзакции строго больше T ₽">
+                                        <TextBlock Text="Порог T (₽):" VerticalAlignment="Center" Margin="0,0,5,0"
                                                    FontSize="12.5" Foreground="{StaticResource TextSecondary}" />
                                         <TextBox Text="{Binding Threshold}"
-                                                 Width="48" Padding="6,5" FontSize="13"
+                                                 Width="58" Padding="6,5" FontSize="13"
                                                  FontFamily="{StaticResource CodeFont}"
                                                  HorizontalContentAlignment="Center" />
                                     </StackPanel>
+                                </WrapPanel>
 
+                                <!-- Строка B: кнопки генерации и загрузки из ЛР-1 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <Button Content="Сгенерировать"
                                             Style="{StaticResource SecondaryButton}"
                                             Command="{Binding GenerateCommand}"
                                             Padding="14,5"
+                                            FontSize="12.5" />
+
+                                    <Button Content="{Binding DbTransactionsBadge}"
+                                            Style="{StaticResource TonalButton}"
+                                            Command="{Binding LoadFromLab1Command}"
+                                            Padding="14,5"
                                             FontSize="12.5"
-                                            Margin="0,0,0,6" />
-                                </WrapPanel>
+                                            Margin="8,0,0,0"
+                                            ToolTip="Загрузить реальные суммы транзакций из базы payment.db (ЛР-1)" />
+                                </StackPanel>
 
                                 <!-- Интерактивные ячейки массива с индексом a[i] и значением -->
                                 <ItemsControl ItemsSource="{Binding Array}" Margin="0,0,0,10">
@@ -238,10 +291,11 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border MinWidth="50"
+                                            <Border MinWidth="64"
                                                     Margin="0,0,6,6"
                                                     Padding="4,5"
-                                                    CornerRadius="8">
+                                                    CornerRadius="8"
+                                                    ToolTip="Сумма транзакции a[i] в ₽. Кликните по числу, чтобы изменить его вручную.">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
                                                         <Setter Property="Background" Value="{StaticResource BgPanel}" />
@@ -275,7 +329,7 @@
                                                         </TextBlock.Style>
                                                     </TextBlock>
                                                     <TextBox Text="{Binding Value, UpdateSourceTrigger=LostFocus}"
-                                                             Width="44"
+                                                             Width="58"
                                                              Padding="2,3"
                                                              HorizontalContentAlignment="Center"
                                                              VerticalContentAlignment="Center"
@@ -290,19 +344,22 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <!-- Текущее состояние в виде плашек-пилюль -->
+                                <!-- Текущее состояние в виде понятных плашек-пилюль -->
                                 <WrapPanel Orientation="Horizontal">
                                     <Border Background="{StaticResource BgPanel}"
                                             BorderBrush="{StaticResource BorderBase}"
                                             BorderThickness="1"
                                             CornerRadius="12"
                                             Padding="10,4"
-                                            Margin="0,0,8,0">
-                                        <TextBlock FontFamily="{StaticResource CodeFont}"
-                                                   FontSize="12.5"
+                                            Margin="0,0,8,4"
+                                            ToolTip="j — номер текущей проверяемой транзакции a[j] (от 0 до n)">
+                                        <TextBlock FontSize="12.5"
                                                    Foreground="{StaticResource TextPrimary}">
-                                            <Run Text="j = " Foreground="{StaticResource TextMuted}" />
-                                            <Run Text="{Binding CurrentIndex, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" />
+                                            <Run Text="Индекс j = " Foreground="{StaticResource TextMuted}" />
+                                            <Run Text="{Binding CurrentIndex, Mode=OneWay}"
+                                                 FontFamily="{StaticResource CodeFont}"
+                                                 FontWeight="SemiBold"
+                                                 Foreground="{StaticResource BrandPrimary}" />
                                         </TextBlock>
                                     </Border>
 
@@ -311,12 +368,18 @@
                                             BorderThickness="1"
                                             CornerRadius="12"
                                             Padding="10,4"
-                                            Margin="0,0,8,0">
-                                        <TextBlock FontFamily="{StaticResource CodeFont}"
-                                                   FontSize="12.5"
+                                            Margin="0,0,8,4"
+                                            ToolTip="res — накопленный результат по уже проверенным транзакциям a[0..j-1]">
+                                        <TextBlock FontSize="12.5"
                                                    Foreground="{StaticResource TextPrimary}">
-                                            <Run Text="res = " Foreground="{StaticResource TextMuted}" />
-                                            <Run Text="{Binding Result, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" />
+                                            <Run Text="Итог res = " Foreground="{StaticResource TextMuted}" />
+                                            <Run Text="{Binding Result, Mode=OneWay}"
+                                                 FontFamily="{StaticResource CodeFont}"
+                                                 FontWeight="SemiBold"
+                                                 Foreground="{StaticResource BrandPrimary}" />
+                                            <Run Text=" " />
+                                            <Run Text="{Binding ResultUnit, Mode=OneWay}"
+                                                 Foreground="{StaticResource TextSecondary}" />
                                         </TextBlock>
                                     </Border>
 
@@ -324,12 +387,16 @@
                                             BorderBrush="{StaticResource BorderBase}"
                                             BorderThickness="1"
                                             CornerRadius="12"
-                                            Padding="10,4">
-                                        <TextBlock FontFamily="{StaticResource CodeFont}"
-                                                   FontSize="12.5"
+                                            Padding="10,4"
+                                            Margin="0,0,0,4"
+                                            ToolTip="Вариант-функция t = n − j: сколько транзакций осталось обработать до завершения цикла">
+                                        <TextBlock FontSize="12.5"
                                                    Foreground="{StaticResource TextPrimary}">
-                                            <Run Text="t = " Foreground="{StaticResource TextMuted}" />
-                                            <Run Text="{Binding VariantT, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}" />
+                                            <Run Text="Осталось t = " Foreground="{StaticResource TextMuted}" />
+                                            <Run Text="{Binding VariantT, Mode=OneWay}"
+                                                 FontFamily="{StaticResource CodeFont}"
+                                                 FontWeight="SemiBold"
+                                                 Foreground="{StaticResource BrandPrimary}" />
                                         </TextBlock>
                                     </Border>
                                 </WrapPanel>
@@ -356,11 +423,13 @@
                                     CornerRadius="8"
                                     Padding="12,8"
                                     Margin="0,0,0,6">
-                                <TextBlock Text="{Binding InvariantFormula}"
-                                           FontFamily="{StaticResource CodeFont}"
-                                           FontSize="13"
-                                           Foreground="{StaticResource BrandPrimary}"
-                                           TextWrapping="Wrap" />
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                    <math:FormulaControl Formula="{Binding InvariantLatex}"
+                                                         Scale="15"
+                                                         Foreground="#0B57D0"
+                                                         SnapsToDevicePixels="True"
+                                                         UseLayoutRounding="True" />
+                                </Viewbox>
                             </Border>
 
                             <TextBlock Text="{Binding InvariantWords}"
@@ -370,9 +439,8 @@
                                        LineHeight="18"
                                        Margin="0,0,0,12" />
 
-                            <!-- Карточки «До шага» и «После шага» -->
-                            <Grid Visibility="{Binding HasSteppedOnce, Converter={StaticResource BoolToVis}}"
-                                  Margin="0,0,0,14">
+                            <!-- Карточки «До шага» и «После шага» (видны всегда: до шага зелёный, после всех шагов красный) -->
+                            <Grid Margin="0,0,0,14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="10" />
@@ -414,11 +482,11 @@
                                                    Margin="0,0,0,4" />
                                         <Border Height="6"
                                                 CornerRadius="3"
-                                                Background="{Binding InvariantAfterStep, Converter={StaticResource BoolToGreenRed}}" />
-                                        <TextBlock Text="{Binding InvariantAfterStep, Converter={StaticResource BoolToCheckCross}}"
+                                                Background="{Binding InvariantAfterIsGreen, Converter={StaticResource BoolToGreenRed}}" />
+                                        <TextBlock Text="{Binding InvariantAfterStatusText}"
                                                    FontSize="12.5"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{Binding InvariantAfterStep, Converter={StaticResource BoolToGreenRed}}"
+                                                   Foreground="{Binding InvariantAfterIsGreen, Converter={StaticResource BoolToGreenRed}}"
                                                    Margin="0,5,0,0" />
                                     </StackPanel>
                                 </Border>
@@ -441,11 +509,13 @@
                                         BorderThickness="1"
                                         CornerRadius="8"
                                         Padding="12,7">
-                                    <TextBlock Text="{Binding VariantFormula}"
-                                               FontFamily="{StaticResource CodeFont}"
-                                               FontSize="13"
-                                               Foreground="{StaticResource BrandPrimary}"
-                                               TextWrapping="Wrap" />
+                                    <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <math:FormulaControl Formula="{Binding VariantLatex}"
+                                                             Scale="15"
+                                                             Foreground="#0B57D0"
+                                                             SnapsToDevicePixels="True"
+                                                             UseLayoutRounding="True" />
+                                    </Viewbox>
                                 </Border>
                                 <Border Grid.Column="1"
                                         Margin="8,0,0,0"
@@ -494,8 +564,8 @@
 
                         <!-- 1. Блок «Проверка сохранения (wp)» -->
                         <StackPanel Visibility="{Binding VerificationDone, Converter={StaticResource BoolToVis}}"
-                                    Margin="0,0,0,18">
-                            <Grid Margin="0,0,0,8">
+                                    Margin="0,0,0,16">
+                            <Grid Margin="0,0,0,10">
                                 <TextBlock Text="Проверка сохранения (wp)"
                                            FontFamily="{StaticResource DisplayFont}"
                                            FontWeight="SemiBold"
@@ -515,13 +585,6 @@
                                 </Border>
                             </Grid>
 
-                            <TextBlock Text="{Binding VerificationSummary}"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="{Binding AllConditionsValid, Converter={StaticResource BoolToGreenRed}}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,10" />
-
                             <TextBlock Text="Условие сохранения (Inv ∧ B) ⇒ wp(S, Inv):"
                                        FontSize="12"
                                        FontWeight="SemiBold"
@@ -532,19 +595,21 @@
                                     BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="12,8"
-                                    Margin="0,0,0,8">
-                                <TextBlock Text="{Binding WpPreservationFormula}"
-                                           FontFamily="{StaticResource CodeFont}"
-                                           FontSize="12.5"
-                                           Foreground="{StaticResource BrandPrimary}"
-                                           TextWrapping="Wrap" />
+                                    Margin="0,0,0,6">
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                    <math:FormulaControl Formula="{Binding WpPreservationLatex}"
+                                                         Scale="14.5"
+                                                         Foreground="#0B57D0"
+                                                         SnapsToDevicePixels="True"
+                                                         UseLayoutRounding="True" />
+                                </Viewbox>
                             </Border>
 
                             <Expander Header="Разбор формулы словами"
                                       IsExpanded="False"
                                       FontSize="12.5"
                                       Foreground="{StaticResource TextSecondary}"
-                                      Margin="0,0,0,12">
+                                      Margin="0,0,0,10">
                                 <Border Background="{StaticResource BgTonal}"
                                         CornerRadius="8"
                                         Padding="12,10"
@@ -557,7 +622,7 @@
                                 </Border>
                             </Expander>
 
-                            <TextBlock Text="Условия тотальной корректности (4 правила):"
+                            <TextBlock Text="Условия тотальной корректности (4 правила + Def):"
                                        FontSize="12"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondary}"
@@ -566,100 +631,107 @@
                             <ItemsControl ItemsSource="{Binding Conditions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Margin="0,0,0,8"
-                                                CornerRadius="10"
+                                        <Border Margin="0,0,0,5"
+                                                CornerRadius="8"
                                                 BorderThickness="1"
-                                                Padding="12,10">
+                                                Padding="10,6">
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Setter Property="Background" Value="#F8FFF8" />
-                                                    <Setter Property="BorderBrush" Value="#34A853" />
+                                                    <Setter Property="BorderBrush" Value="#A8DAB5" />
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsValid}" Value="False">
                                                             <Setter Property="Background" Value="#FFF8F8" />
-                                                            <Setter Property="BorderBrush" Value="#D93025" />
+                                                            <Setter Property="BorderBrush" Value="#F28B82" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
-                                            <StackPanel>
-                                                <Grid>
-                                                    <TextBlock Text="{Binding Title}"
-                                                               FontWeight="SemiBold"
-                                                               FontSize="13"
-                                                               Foreground="{StaticResource TextPrimary}"
-                                                               VerticalAlignment="Center" />
-                                                    <Border HorizontalAlignment="Right"
-                                                            CornerRadius="6"
-                                                            Padding="8,2"
-                                                            Background="{Binding IsValid, Converter={StaticResource BoolToGreenRed}}">
-                                                        <TextBlock Text="{Binding StatusText}"
-                                                                   Foreground="White"
-                                                                   FontSize="11"
-                                                                   FontWeight="SemiBold" />
-                                                    </Border>
-                                                </Grid>
-
-                                                <Border Background="#F1F3F4"
-                                                        CornerRadius="6"
-                                                        Padding="8,5"
-                                                        Margin="0,6,0,0">
-                                                    <TextBlock Text="{Binding Formula}"
-                                                               FontFamily="{StaticResource CodeFont}"
-                                                               FontSize="12"
-                                                               Foreground="{StaticResource BrandPrimary}"
-                                                               TextWrapping="Wrap" />
-                                                </Border>
-
-                                                <Expander IsExpanded="{Binding IsExpanded}"
-                                                          Header="Подробнее"
-                                                          FontSize="12"
-                                                          Foreground="{StaticResource TextSecondary}"
-                                                          Margin="0,6,0,0">
-                                                    <StackPanel Margin="0,6,0,0">
-                                                        <TextBlock Text="Развёрнутая формула:"
-                                                                   FontSize="11.5"
+                                            <Expander Style="{StaticResource CompactConditionExpander}"
+                                                      IsExpanded="{Binding IsExpanded}">
+                                                <Expander.Header>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding Title}"
                                                                    FontWeight="SemiBold"
-                                                                   Foreground="{StaticResource TextSecondary}"
-                                                                   Margin="0,0,0,3" />
-                                                        <Border Background="{StaticResource BgPanel}"
-                                                                BorderBrush="{StaticResource BorderBase}"
-                                                                BorderThickness="1"
+                                                                   FontSize="12.5"
+                                                                   Foreground="{StaticResource TextPrimary}"
+                                                                   VerticalAlignment="Center" />
+                                                        <Viewbox Grid.Column="1"
+                                                                 StretchDirection="DownOnly"
+                                                                 HorizontalAlignment="Left"
+                                                                 VerticalAlignment="Center"
+                                                                 Margin="8,0,8,0"
+                                                                 ToolTip="{Binding Formula}">
+                                                            <math:FormulaControl Formula="{Binding FormulaLatex}"
+                                                                                 Scale="13"
+                                                                                 Foreground="#0B57D0"
+                                                                                 SnapsToDevicePixels="True"
+                                                                                 UseLayoutRounding="True" />
+                                                        </Viewbox>
+                                                        <Border Grid.Column="2"
                                                                 CornerRadius="6"
-                                                                Padding="8,6"
-                                                                Margin="0,0,0,6">
-                                                            <TextBlock Text="{Binding ExpandedFormula}"
-                                                                       FontFamily="{StaticResource CodeFont}"
-                                                                       FontSize="11.5"
-                                                                       Foreground="{StaticResource TextPrimary}"
-                                                                       TextWrapping="Wrap" />
+                                                                Padding="6,1"
+                                                                VerticalAlignment="Center"
+                                                                Background="{Binding IsValid, Converter={StaticResource BoolToGreenRed}}">
+                                                            <TextBlock Text="{Binding IsValid, Converter={StaticResource BoolToYesNo}}"
+                                                                       Foreground="White"
+                                                                       FontSize="11"
+                                                                       FontWeight="SemiBold" />
                                                         </Border>
+                                                    </Grid>
+                                                </Expander.Header>
 
-                                                        <TextBlock Text="Пояснение:"
-                                                                   FontSize="11.5"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="{StaticResource TextSecondary}"
-                                                                   Margin="0,0,0,2" />
-                                                        <TextBlock Text="{Binding HumanExplanation}"
-                                                                   FontSize="12"
-                                                                   Foreground="{StaticResource TextSecondary}"
-                                                                   TextWrapping="Wrap"
-                                                                   LineHeight="17"
-                                                                   Margin="0,0,0,6" />
+                                                <StackPanel>
+                                                    <TextBlock Text="Развёрнутая формула:"
+                                                               FontSize="11.5"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextSecondary}"
+                                                               Margin="0,0,0,3" />
+                                                    <Border Background="{StaticResource BgPanel}"
+                                                            BorderBrush="{StaticResource BorderBase}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="6"
+                                                            Padding="8,6"
+                                                            Margin="0,0,0,6">
+                                                        <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                                                            <math:FormulaControl Formula="{Binding ExpandedFormulaLatex}"
+                                                                                 Scale="13.5"
+                                                                                 Foreground="#0B57D0"
+                                                                                 SnapsToDevicePixels="True"
+                                                                                 UseLayoutRounding="True" />
+                                                        </Viewbox>
+                                                    </Border>
 
-                                                        <TextBlock Text="Доказательство:"
-                                                                   FontSize="11.5"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="{StaticResource TextSecondary}"
-                                                                   Margin="0,0,0,2" />
-                                                        <TextBlock Text="{Binding ProofSummary}"
-                                                                   FontSize="12"
-                                                                   Foreground="{StaticResource TextSecondary}"
-                                                                   TextWrapping="Wrap"
-                                                                   LineHeight="17" />
-                                                    </StackPanel>
-                                                </Expander>
-                                            </StackPanel>
+                                                    <TextBlock Text="Пояснение:"
+                                                               FontSize="11.5"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextSecondary}"
+                                                               Margin="0,0,0,2" />
+                                                    <TextBlock Text="{Binding HumanExplanation}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource TextSecondary}"
+                                                               TextWrapping="Wrap"
+                                                               LineHeight="17"
+                                                               Margin="0,0,0,6" />
+
+                                                    <TextBlock Text="Доказательство:"
+                                                               FontSize="11.5"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextSecondary}"
+                                                               Margin="0,0,0,2" />
+                                                    <TextBlock Text="{Binding ProofSummary}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource TextSecondary}"
+                                                               TextWrapping="Wrap"
+                                                               LineHeight="17" />
+                                                </StackPanel>
+                                            </Expander>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -678,9 +750,9 @@
                             <!-- Подсказка, пока не сделано ни одного шага -->
                             <Border Background="{StaticResource BgTonal}"
                                     CornerRadius="10"
-                                    Padding="14,12"
+                                    Padding="14,10"
                                     Visibility="{Binding HasSteppedOnce, Converter={StaticResource InvBoolToVis}}">
-                                <TextBlock Text="Нажмите «Шаг» или «Пуск» на верхней панели, чтобы запустить пошаговое исполнение цикла и отследить инвариант и вариант-функцию t."
+                                <TextBlock Text="Нажмите «Шаг» или «Пуск», чтобы проследить выполнение цикла, проверку инварианта Inv и убывание варианта t."
                                            FontSize="12.5"
                                            Foreground="{StaticResource TextSecondary}"
                                            TextWrapping="Wrap"
@@ -702,7 +774,7 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="36" />
                                                     <ColumnDefinition Width="38" />
-                                                    <ColumnDefinition Width="52" />
+                                                    <ColumnDefinition Width="68" />
                                                     <ColumnDefinition Width="38" />
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="*" />
@@ -760,7 +832,7 @@
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="36" />
                                                                 <ColumnDefinition Width="38" />
-                                                                <ColumnDefinition Width="52" />
+                                                                <ColumnDefinition Width="68" />
                                                                 <ColumnDefinition Width="38" />
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="*" />
@@ -893,13 +965,13 @@
                        Foreground="{StaticResource TextSecondary}"
                        VerticalAlignment="Center"
                        Visibility="{Binding StatusLine, Converter={StaticResource StringToVis}}" />
-            <TextBlock Text="Готово к верификации. Нажмите «Шаг» или «Пуск», либо отредактируйте элементы массива."
+            <TextBlock Text="Готово к проверке. Нажмите «Шаг» или «Пуск» либо загрузите транзакции из ЛР-1."
                        FontSize="12"
                        Foreground="{StaticResource TextMuted}"
                        VerticalAlignment="Center"
                        Visibility="{Binding StatusLine, Converter={StaticResource InvStringToVis}}" />
 
-            <TextBlock Text="Наведите на «?» для справки • Кликните по ячейке a[i] для изменения"
+            <TextBlock Text="Кликните по ячейке a[i], чтобы изменить сумму (₽) • Подробности в «? Справка»"
                        FontSize="12"
                        Foreground="{StaticResource TextMuted}"
                        HorizontalAlignment="Right"

@@ -32,7 +32,7 @@
                 Background="{StaticResource BgPanel}"
                 BorderBrush="{StaticResource BorderBase}"
                 BorderThickness="0,0,0,1"
-                Padding="22,10">
+                Padding="18,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -41,32 +41,36 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Бренд / Заголовок комплекса -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{StaticResource BgPrimaryTonal}"
-                            CornerRadius="10"
-                            Padding="10,5"
-                            Margin="0,0,12,0">
-                        <TextBlock Text="ТвГТУ · Б.ПИН.ИИ.25.16"
-                                   FontFamily="{StaticResource CodeFont}"
-                                   FontSize="11.5"
-                                   FontWeight="SemiBold"
-                                   Foreground="#041E49" />
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Комплекс формальной верификации"
                                    FontFamily="{StaticResource DisplayFont}"
                                    FontWeight="SemiBold"
-                                   FontSize="15"
+                                   FontSize="14.5"
+                                   VerticalAlignment="Center"
                                    Foreground="{StaticResource TextPrimary}" />
-                        <TextBlock Text="Контракты (ЛР-1) → Слабейшее предусловие wp (ЛР-2) → Циклы (ЛР-3)"
-                                   FontSize="11"
-                                   Foreground="{StaticResource TextMuted}" />
+                        <Border Background="{StaticResource BgPrimaryTonal}"
+                                CornerRadius="8"
+                                Padding="7,2"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="ТвГТУ · Б.ПИН.ИИ.25.16"
+                                       FontFamily="{StaticResource CodeFont}"
+                                       FontSize="10.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="#041E49" />
+                        </Border>
                     </StackPanel>
+                    <TextBlock Text="Банковское ядро: Контракты (ЛР-1) → wp (ЛР-2) → Циклы (ЛР-3)"
+                               FontSize="11"
+                               Margin="0,2,0,0"
+                               Foreground="{StaticResource TextMuted}" />
                 </StackPanel>
 
                 <!-- Переключатель лабораторных работ -->
                 <Border Grid.Column="1"
                         HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         Background="{StaticResource BgTonal}"
                         BorderBrush="{StaticResource BorderBase}"
                         BorderThickness="1"
@@ -77,21 +81,27 @@
                                      Content="ЛР-1 · Платёжный модуль"
                                      GroupName="LabNavigation"
                                      Style="{StaticResource LabNavTab}"
+                                     FontSize="12.5"
+                                     Padding="12,7"
                                      IsChecked="True"
                                      Checked="LabTab_Checked"
                                      Tag="0"
-                                     Margin="0,0,4,0" />
+                                     Margin="0,0,3,0" />
                         <RadioButton x:Name="TabLab2"
                                      Content="ЛР-2 · Калькулятор wp"
                                      GroupName="LabNavigation"
                                      Style="{StaticResource LabNavTab}"
+                                     FontSize="12.5"
+                                     Padding="12,7"
                                      Checked="LabTab_Checked"
                                      Tag="1"
-                                     Margin="0,0,4,0" />
+                                     Margin="0,0,3,0" />
                         <RadioButton x:Name="TabLab3"
                                      Content="ЛР-3 · Верификатор циклов"
                                      GroupName="LabNavigation"
                                      Style="{StaticResource LabNavTab}"
+                                     FontSize="12.5"
+                                     Padding="12,7"
                                      Checked="LabTab_Checked"
                                      Tag="2" />
                     </StackPanel>
@@ -103,9 +113,11 @@
                         BorderBrush="{StaticResource BorderBase}"
                         BorderThickness="1"
                         CornerRadius="8"
-                        Padding="10,5"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="Ctrl+1 / 2 / 3 — разделы"
+                        Padding="8,5"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        ToolTip="Быстрое переключение разделов: Ctrl+1, Ctrl+2, Ctrl+3">
+                    <TextBlock Text="Ctrl+1/2/3"
                                FontFamily="{StaticResource CodeFont}"
                                FontSize="11"
                                Foreground="{StaticResource TextMuted}" />

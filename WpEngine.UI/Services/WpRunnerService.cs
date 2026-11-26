@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using WpEngine.Core.AST;
 using WpEngine.Core.Contracts;
@@ -253,7 +254,8 @@ public class WpRunnerService : IWpEngine, ICodeParser
         switch (expr)
         {
             case BinaryExpr bin when bin.Op == BinaryOp.Div:
-                result.Add(bin.Right);
+                if (bin.Right is not NumberExpr num || num.Value == 0)
+                    result.Add(bin.Right);
                 FindDivisorsRecursive(bin.Left, result);
                 FindDivisorsRecursive(bin.Right, result);
                 break;
@@ -300,14 +302,36 @@ public class WpRunnerService : IWpEngine, ICodeParser
         _ => "="
     };
 
+    private static bool IsAddSub(Expr expr) =>
+        expr is BinaryExpr b && (b.Op == BinaryOp.Add || b.Op == BinaryOp.Sub);
+
+    private static bool IsMulDiv(Expr expr) =>
+        expr is BinaryExpr b && (b.Op == BinaryOp.Mul || b.Op == BinaryOp.Div);
+
     private static string FormatExpr(Expr expr) => expr switch
     {
-        NumberExpr n => n.Value.ToString(),
+        NumberExpr n => n.Value.ToString(CultureInfo.InvariantCulture),
         VariableExpr v => v.Name,
-        BinaryExpr bin => $"{FormatExpr(bin.Left)} {BinOpToString(bin.Op)} {FormatExpr(bin.Right)}",
+        BinaryExpr bin => FormatBinaryExpr(bin),
         AbsExpr abs => $"abs({FormatExpr(abs.Inner)})",
         _ => expr.ToString()
     };
+
+    private static string FormatBinaryExpr(BinaryExpr bin)
+    {
+        bool wrapLeft = (bin.Op == BinaryOp.Mul || bin.Op == BinaryOp.Div) && IsAddSub(bin.Left);
+        bool wrapRight = bin.Op switch
+        {
+            BinaryOp.Mul => IsAddSub(bin.Right),
+            BinaryOp.Div => IsAddSub(bin.Right) || IsMulDiv(bin.Right),
+            BinaryOp.Sub => IsAddSub(bin.Right),
+            _ => false
+        };
+
+        string left = wrapLeft ? $"({FormatExpr(bin.Left)})" : FormatExpr(bin.Left);
+        string right = wrapRight ? $"({FormatExpr(bin.Right)})" : FormatExpr(bin.Right);
+        return $"{left} {BinOpToString(bin.Op)} {right}";
+    }
 
     private static string BinOpToString(BinaryOp op) => op switch
     {
@@ -374,22 +398,32 @@ public class WpRunnerService : IWpEngine, ICodeParser
 
     public string ExprToLatex(Expr expr) => expr switch
     {
-        NumberExpr n => n.Value.ToString(),
+        NumberExpr n => n.Value.ToString(CultureInfo.InvariantCulture),
         VariableExpr v => FormatVarLatex(v.Name),
         BinaryExpr bin when bin.Op == BinaryOp.Div => $@"\frac{{{ExprToLatex(bin.Left)}}}{{{ExprToLatex(bin.Right)}}}",
-        BinaryExpr bin when bin.Op == BinaryOp.Mul => $@"{ExprToLatex(bin.Left)} \cdot {ExprToLatex(bin.Right)}",
-        BinaryExpr bin => $"{ExprToLatex(bin.Left)} {BinOpToString(bin.Op)} {ExprToLatex(bin.Right)}",
+        BinaryExpr bin when bin.Op == BinaryOp.Mul => FormatBinaryLatex(bin, @"\cdot"),
+        BinaryExpr bin => FormatBinaryLatex(bin, BinOpToString(bin.Op)),
         AbsExpr abs => $@"|{ExprToLatex(abs.Inner)}|",
         _ => expr.ToString()
     };
+
+    private string FormatBinaryLatex(BinaryExpr bin, string opLatex)
+    {
+        bool wrapLeft = bin.Op == BinaryOp.Mul && IsAddSub(bin.Left);
+        bool wrapRight = (bin.Op == BinaryOp.Mul || bin.Op == BinaryOp.Sub) && IsAddSub(bin.Right);
+
+        string left = wrapLeft ? $"({ExprToLatex(bin.Left)})" : ExprToLatex(bin.Left);
+        string right = wrapRight ? $"({ExprToLatex(bin.Right)})" : ExprToLatex(bin.Right);
+        return $"{left} {opLatex} {right}";
+    }
 
     private static string FormatVarLatex(string name)
     {
         if (name.Length > 1 && char.IsLetter(name[0]) && char.IsDigit(name[1]))
             return $"{name[0]}_{{{name.Substring(1)}}}";
         if (name.Length > 1)
-            return $@"\text{{{name}}}";
-        return name;
+            return $@"\text{{{name.Replace("_", @"\_")}}}";
+        return name == "_" ? @"\_" : name;
     }
 
     public string StatementToLatex(Statement stmt) => stmt switch

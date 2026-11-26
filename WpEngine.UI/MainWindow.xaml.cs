@@ -1,16 +1,21 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using PaymentApp.Domain;
 
 namespace WpEngine.UI;
 
 public partial class MainWindow : Window
 {
+    private readonly PersistentBank _sharedBank;
     private int _activeLabIndex;
 
     public MainWindow()
     {
         InitializeComponent();
+        _sharedBank = PersistentBank.Create("payment.db");
+        PaymentView.AttachBank(_sharedBank);
+        LoopsViewControl.AttachBank(_sharedBank);
         SelectLab(0);
     }
 

@@ -5,13 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:payVm="clr-namespace:WpEngine.UI.ViewModels.Payment"
              mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=payVm:PaymentModuleViewModel, IsDesignTimeCreatable=False}"
              d:DesignHeight="760" d:DesignWidth="1200"
              Background="{StaticResource BgCanvas}"
              FontFamily="{StaticResource MainFont}">
-
-    <UserControl.DataContext>
-        <payVm:PaymentModuleViewModel />
-    </UserControl.DataContext>
 
     <Grid Margin="20,12,20,14">
         <Grid.ColumnDefinitions>
@@ -113,6 +110,13 @@
                                    TextWrapping="Wrap"
                                    LineHeight="16">
                             Предусловия проверяются через <Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">Guard.Requires</Run>, постусловия и инварианты — через <Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">Debug.Assert</Run>.
+                        </TextBlock>
+                        <TextBlock FontSize="11"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="15.5"
+                                   Margin="0,6,0,0">
+                            Формулы контрактов формально доказываются через <Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">wp</Run> в ЛР-2 (<Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">Ctrl+2</Run>), а транзакции из <Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">payment.db</Run> доступны для EOD-аудита циклов в ЛР-3 (<Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">Ctrl+3</Run>).
                         </TextBlock>
                         <Border Background="{StaticResource BgPanel}"
                                 BorderBrush="{StaticResource BorderBase}"
