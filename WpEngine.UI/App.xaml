@@ -2,12 +2,27 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:WpEngine.UI"
+             xmlns:payVm="clr-namespace:WpEngine.UI.ViewModels.Payment"
+             xmlns:payViews="clr-namespace:WpEngine.UI.Views.Payment"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/WpEngine.UI;component/Styles/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- DataTemplates для операций ЛР-1 (Платёжный модуль) -->
+            <DataTemplate DataType="{x:Type payVm:TransferOperationViewModel}">
+                <payViews:TransferView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type payVm:DepositOperationViewModel}">
+                <payViews:DepositView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type payVm:ServicePaymentOperationViewModel}">
+                <payViews:ServicePaymentView />
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

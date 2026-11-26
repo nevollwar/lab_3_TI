@@ -40,6 +40,7 @@ public class StringToVisibilityConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
 public class BoolToColorBrushConverter : IValueConverter
 {
     public string TrueColor { get; set; } = "#1E8E3E";
@@ -63,8 +64,52 @@ public class BoolToStringConverter : IValueConverter
     public string FalseText { get; set; } = "Нет";
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        => value is true ? TrueText : FalseText;
+    {
+        bool b = value is true;
+        if (parameter is string param && param.Contains('|'))
+        {
+            var parts = param.Split('|', 2);
+            return b ? parts[0] : parts[1];
+        }
+        return b ? TrueText : FalseText;
+    }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
+}
+
+public class IntEqualsToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is int current && parameter != null && int.TryParse(parameter.ToString(), out int target))
+        {
+            return current == target ? Visibility.Visible : Visibility.Collapsed;
+        }
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+public class IntEqualsToBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is int current && parameter != null && int.TryParse(parameter.ToString(), out int target))
+        {
+            return current == target;
+        }
+        return false;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is true && parameter != null && int.TryParse(parameter.ToString(), out int target))
+        {
+            return target;
+        }
+        return Binding.DoNothing;
+    }
 }

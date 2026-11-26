@@ -1,0 +1,188 @@
+<UserControl x:Class="WpEngine.UI.Views.Payment.DepositView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="580" d:DesignWidth="880"
+             FontFamily="{StaticResource MainFont}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" MinWidth="310" />
+            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="1.25*" MinWidth="360" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Левая карточка: выбор лимитного счёта и сумма -->
+        <Border Grid.Column="0"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderBase}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="20"
+                Effect="{StaticResource SurfaceShadow}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <TextBlock Text="Параметры пополнения"
+                               FontFamily="{StaticResource DisplayFont}"
+                               FontWeight="SemiBold"
+                               FontSize="15.5"
+                               Foreground="{StaticResource TextPrimary}"
+                               Margin="0,0,0,14" />
+
+                    <TextBlock Text="Счёт с дневным лимитом"
+                               FontSize="12.5"
+                               FontWeight="Medium"
+                               Foreground="{StaticResource TextSecondary}"
+                               Margin="0,0,0,6" />
+                    <ComboBox ItemsSource="{Binding LimitAccounts}"
+                              SelectedItem="{Binding SelectedAccount}"
+                              DisplayMemberPath="DisplayName"
+                              Background="{StaticResource BgRecessed}"
+                              BorderBrush="{StaticResource BorderInput}"
+                              Foreground="{StaticResource TextPrimary}"
+                              FontSize="13"
+                              Padding="10,7"
+                              Margin="0,0,0,12" />
+
+                    <!-- Баннер текущих лимитов выбранного счёта -->
+                    <Border Background="{StaticResource BgPrimaryTonalLight}"
+                            BorderBrush="{StaticResource BgPrimaryTonal}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="12,9"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Действующие лимиты счёта"
+                                       FontSize="11.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource BrandPrimary}"
+                                       Margin="0,0,0,3" />
+                            <TextBlock Text="{Binding SelectedAccount.LimitInfo, FallbackValue='Выберите счёт для просмотра лимитов'}"
+                                       FontFamily="{StaticResource CodeFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextPrimary}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Сумма пополнения (₽)"
+                               FontSize="12.5"
+                               FontWeight="Medium"
+                               Foreground="{StaticResource TextSecondary}"
+                               Margin="0,0,0,6" />
+                    <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}"
+                             FontFamily="{StaticResource CodeFont}"
+                             FontSize="14"
+                             Margin="0,0,0,16" />
+
+                    <Button Content="Пополнить счёт"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding ExecuteCommand}"
+                            HorizontalAlignment="Stretch"
+                            Padding="20,10"
+                            Margin="0,0,0,18" />
+
+                    <Border Background="{StaticResource BgTonal}"
+                            BorderBrush="{StaticResource BorderBase}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="14,12">
+                        <StackPanel>
+                            <TextBlock Text="Результат операции"
+                                       FontFamily="{StaticResource DisplayFont}"
+                                       FontWeight="SemiBold"
+                                       FontSize="12.5"
+                                       Foreground="{StaticResource BrandPrimary}"
+                                       Margin="0,0,0,6" />
+                            <TextBlock Text="{Binding LastResultText}"
+                                       FontFamily="{StaticResource CodeFont}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextPrimary}"
+                                       TextWrapping="Wrap"
+                                       LineHeight="18" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Правая колонка: таблица лимитных счетов + карточка правил -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="14" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{StaticResource BgPanel}"
+                    BorderBrush="{StaticResource BorderBase}"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    Padding="20"
+                    Effect="{StaticResource SurfaceShadow}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Счета с дневным лимитом"
+                               FontFamily="{StaticResource DisplayFont}"
+                               FontWeight="SemiBold"
+                               FontSize="15.5"
+                               Foreground="{StaticResource TextPrimary}"
+                               Margin="0,0,0,12" />
+
+                    <ListView Grid.Row="1"
+                              ItemsSource="{Binding LimitAccounts}"
+                              BorderBrush="{StaticResource BorderBase}"
+                              BorderThickness="1"
+                              Background="{StaticResource BgRecessed}"
+                              Foreground="{StaticResource TextPrimary}"
+                              FontSize="12.5">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="№ счёта" Width="95" DisplayMemberBinding="{Binding Number}" />
+                                <GridViewColumn Header="Владелец" Width="125" DisplayMemberBinding="{Binding Owner}" />
+                                <GridViewColumn Header="Баланс" Width="100" DisplayMemberBinding="{Binding Balance, StringFormat={}{0:N2} ₽}" />
+                                <GridViewColumn Header="Разовый лимит" Width="105" DisplayMemberBinding="{Binding SingleDepositLimit, StringFormat={}{0:N2} ₽}" />
+                                <GridViewColumn Header="Дневной ост." Width="105" DisplayMemberBinding="{Binding DailyLimitRemaining, StringFormat={}{0:N2} ₽}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </Border>
+
+            <!-- Карточка правил пополнения -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource BgPanel}"
+                    BorderBrush="{StaticResource BorderBase}"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    Padding="18,16"
+                    Effect="{StaticResource SurfaceShadow}">
+                <StackPanel>
+                    <TextBlock Text="Правила контракта пополнения"
+                               FontFamily="{StaticResource DisplayFont}"
+                               FontWeight="SemiBold"
+                               FontSize="14.5"
+                               Foreground="{StaticResource TextPrimary}"
+                               Margin="0,0,0,8" />
+                    <TextBlock FontSize="12.5"
+                               Foreground="{StaticResource TextSecondary}"
+                               TextWrapping="Wrap"
+                               LineHeight="19">
+                        • Сумма пополнения должна быть строго положительной (<Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">amount &gt; 0</Run>).<LineBreak />
+                        • Нельзя превышать разовый лимит (<Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">amount ≤ SingleDepositLimit</Run>).<LineBreak />
+                        • Нельзя превышать остаток дневного лимита (<Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">amount ≤ DailyLimitRemaining</Run>).<LineBreak />
+                        • После успешного пополнения баланс растёт на <Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">amount</Run>, а остаток лимита уменьшается на <Run FontFamily="{StaticResource CodeFont}" Foreground="{StaticResource TextPrimary}">amount</Run>.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,98 +1,88 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using WpEngine.UI.ViewModels;
 
 namespace WpEngine.UI;
 
 public partial class MainWindow : Window
 {
+    private int _activeLabIndex;
+
     public MainWindow()
     {
         InitializeComponent();
+        SelectLab(0);
     }
 
-    private void ResultsScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    private void LabTab_Checked(object sender, RoutedEventArgs e)
     {
-        if (sender is ScrollViewer scv)
+        if (sender is RadioButton rb && int.TryParse(rb.Tag?.ToString(), out int index))
         {
-            scv.ScrollToVerticalOffset(scv.VerticalOffset - (e.Delta * 0.75));
-            e.Handled = true;
-        }
-    }
-
-    private void CodeEditor_ScrollChanged(object sender, ScrollChangedEventArgs e)
-    {
-        GutterScrollTransform.Y = -e.VerticalOffset;
-        HighlightScrollTransform.Y = -e.VerticalOffset;
-    }
-
-    private void ProgramCodeEditor_GotFocus(object sender, RoutedEventArgs e)
-    {
-        CodeEditorContainer.Background = Brushes.White;
-        if (FindResource("BrandPrimary") is Brush brandBrush)
-        {
-            CodeEditorContainer.BorderBrush = brandBrush;
+            SelectLab(index);
         }
     }
 
-    private void ProgramCodeEditor_LostFocus(object sender, RoutedEventArgs e)
+    private void SelectLab(int index)
     {
-        if (FindResource("BgRecessed") is Brush bgBrush)
+        _activeLabIndex = index;
+
+        if (PaymentView == null || WpView == null || LoopsViewControl == null)
         {
-            CodeEditorContainer.Background = bgBrush;
+            return;
         }
-        if (FindResource("BorderInput") is Brush borderBrush)
+
+        PaymentView.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+        WpView.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
+        LoopsViewControl.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+
+        Title = index switch
         {
-            CodeEditorContainer.BorderBrush = borderBrush;
-        }
+            0 => "ЛР-1 · Платёжный модуль — Комплекс формальной верификации",
+            1 => "ЛР-2 · Калькулятор слабейшего предусловия (wp) — Комплекс формальной верификации",
+            2 => "ЛР-3 · Верификатор корректности циклов — Комплекс формальной верификации",
+            _ => "Комплекс формальной верификации"
+        };
     }
 
-    private void GutterLine_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (sender is FrameworkElement fe && fe.Tag is int lineNumber)
+        if (Keyboard.Modifiers != ModifierKeys.Control)
         {
-            NavigateToCodeLine(lineNumber);
-        }
-    }
-
-    private void ErrorBanner_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (DataContext is MainViewModel vm && vm.ErrorLineNumber > 0)
-        {
-            NavigateToCodeLine(vm.ErrorLineNumber);
-        }
-    }
-
-    private void NavigateToCodeLine(int lineNumber)
-    {
-        string text = ProgramCodeEditor.Text ?? string.Empty;
-        int currentLine = 1;
-        int lineStart = 0;
-
-        for (int i = 0; i < text.Length && currentLine < lineNumber; i++)
-        {
-            if (text[i] == '\n')
-            {
-                currentLine++;
-                lineStart = i + 1;
-            }
+            return;
         }
 
-        int lineEnd = text.IndexOf('\n', lineStart);
-        if (lineEnd < 0) lineEnd = text.Length;
-        while (lineEnd > lineStart && text[lineEnd - 1] == '\r')
+        switch (e.Key)
         {
-            lineEnd--;
-        }
-
-        ProgramCodeEditor.Focus();
-        ProgramCodeEditor.Select(lineStart, Math.Max(0, lineEnd - lineStart));
-        int lineIndex = Math.Max(0, lineNumber - 1);
-        if (lineIndex < ProgramCodeEditor.LineCount)
-        {
-            ProgramCodeEditor.ScrollToLine(lineIndex);
+            case Key.D1:
+            case Key.NumPad1:
+                TabLab1.IsChecked = true;
+                e.Handled = true;
+                break;
+            case Key.D2:
+            case Key.NumPad2:
+                TabLab2.IsChecked = true;
+                e.Handled = true;
+                break;
+            case Key.D3:
+            case Key.NumPad3:
+                TabLab3.IsChecked = true;
+                e.Handled = true;
+                break;
+            case Key.R:
+            case Key.Return:
+                if (_activeLabIndex == 1 && WpView.ViewModel.CalculateCommand.CanExecute(null))
+                {
+                    WpView.ViewModel.CalculateCommand.Execute(null);
+                    e.Handled = true;
+                }
+                break;
+            case Key.S:
+                if (_activeLabIndex == 1 && WpView.ViewModel.ExportReportCommand.CanExecute(null))
+                {
+                    WpView.ViewModel.ExportReportCommand.Execute(null);
+                    e.Handled = true;
+                }
+                break;
         }
     }
 }

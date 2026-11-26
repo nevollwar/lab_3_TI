@@ -1,0 +1,177 @@
+<Window x:Class="WpEngine.UI.Views.Payment.ContractWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Спецификация контракта"
+        Width="740"
+        Height="680"
+        MinWidth="560"
+        MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BgCanvas}"
+        FontFamily="{StaticResource MainFont}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок окна -->
+        <Border Grid.Row="0"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderBase}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="18,14"
+                Margin="0,0,0,14"
+                Effect="{StaticResource SurfaceShadow}">
+            <StackPanel>
+                <TextBlock Text="СПЕЦИФИКАЦИЯ КОНТРАКТА (DESIGN BY CONTRACT)"
+                           FontFamily="{StaticResource DisplayFont}"
+                           FontWeight="SemiBold"
+                           FontSize="11"
+                           Foreground="{StaticResource BrandPrimary}"
+                           Margin="0,0,0,4" />
+                <TextBlock Text="{Binding OperationName}"
+                           FontFamily="{StaticResource DisplayFont}"
+                           FontWeight="SemiBold"
+                           FontSize="18"
+                           Foreground="{StaticResource TextPrimary}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <!-- Секции контракта -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Предусловия -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12"
+                        Effect="{StaticResource SurfaceShadow}">
+                    <StackPanel>
+                        <TextBlock Text="Предусловия (Preconditions / Requires)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource BrandPrimary}"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="{Binding Preconditions}"
+                                   FontFamily="{StaticResource CodeFont}"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Постусловия -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12"
+                        Effect="{StaticResource SurfaceShadow}">
+                    <StackPanel>
+                        <TextBlock Text="Постусловия и инварианты (Postconditions / Ensures)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="#188038"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="{Binding Postconditions}"
+                                   FontFamily="{StaticResource CodeFont}"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Эффекты и исключения -->
+                <Border Background="{StaticResource BgPanel}"
+                        BorderBrush="{StaticResource BorderBase}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12"
+                        Effect="{StaticResource SurfaceShadow}">
+                    <StackPanel>
+                        <TextBlock Text="Эффекты и обработка исключений"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Text="{Binding EffectsAndExceptions}"
+                                   FontSize="13"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="19" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Корректный пример -->
+                <Border Background="#E6F4EA"
+                        BorderBrush="#A8DAB5"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14"
+                        Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Корректный сценарий (Pre ✓ → Post ✓)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="13.5"
+                                   Foreground="#188038"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{Binding ValidExample}"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="18" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Некорректный пример -->
+                <Border Background="#FDE7E9"
+                        BorderBrush="#F6AEA9"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Padding="16,14">
+                    <StackPanel>
+                        <TextBlock Text="Некорректный сценарий (Pre ✗ → PreconditionException)"
+                                   FontFamily="{StaticResource DisplayFont}"
+                                   FontWeight="SemiBold"
+                                   FontSize="13.5"
+                                   Foreground="#D93025"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{Binding InvalidExample}"
+                                   FontSize="12.5"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="18" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Кнопка закрытия -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Закрыть"
+                    Style="{StaticResource PrimaryButton}"
+                    IsDefault="True"
+                    IsCancel="True"
+                    Click="CloseButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

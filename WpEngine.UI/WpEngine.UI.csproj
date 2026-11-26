@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WpEngine.Core\WpEngine.Core.csproj" />
+    <ProjectReference Include="..\PaymentApp.Domain\PaymentApp.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
