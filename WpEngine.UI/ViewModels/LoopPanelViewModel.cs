@@ -15,9 +15,6 @@ public class LoopPanelViewModel : ViewModelBase
     //зависимости
     private readonly LoopRunner   _runner   = new();
     private readonly LoopVerifier _verifier = new();
-    private bool _isInitializingRunner;
-    private bool _isRunning;
-    private int  _runVersion;
 
     //параметры генерации
     private int      _n         = 6;
@@ -139,27 +136,15 @@ public class LoopPanelViewModel : ViewModelBase
     public LoopPanelViewModel()
     {
         GenerateCommand = new RelayCommand(_ => Generate());
-        StepCommand     = new RelayCommand(_ => Step(),    _ => !_isRunning && !IsFinished && Array.Count > 0);
-        RunCommand      = new RelayCommand(async _ => await RunAsync(), _ => !_isRunning && !IsFinished && Array.Count > 0);
-        ResetCommand    = new RelayCommand(_ => ResetLoop());
+        StepCommand     = new RelayCommand(_ => Step(),    _ => !IsFinished && Array.Count > 0);
+        RunCommand      = new RelayCommand(async _ => await RunAsync(), _ => !IsFinished && Array.Count > 0);
+        ResetCommand    = new RelayCommand(_ => { ResetLoop(); HasSteppedOnce = false; });
         VerifyCommand   = new RelayCommand(_ => RunVerification());
 
         Generate();
     }
 
     //  Генерация и инициализация
-
-    internal void OnArrayCellEdited()
-    {
-        if (_isInitializingRunner) return;
-
-        var arr = Array.Select(x => x.Value).ToArray();
-        if (arr.Length == 0)
-            arr = [0];
-
-        InitRunner(arr);
-        StatusLine = "Массив изменён вручную — цикл сброшен в начальное состояние.";
-    }
 
     private void Generate()
     {
@@ -176,37 +161,27 @@ public class LoopPanelViewModel : ViewModelBase
 
     private void InitRunner(int[] arr)
     {
-        if (_isInitializingRunner) return;
-        _isInitializingRunner = true;
-        _runVersion++;
         try
         {
-            if (arr.Length == 0)
-                arr = [0];
-
-            try
-            {
-                _runner.Reset(SelectedMode, arr, Threshold);
-            }
-            catch (ArgumentException)
-            {
-                // PrefixMax с пустым массивом — добавляем хотя бы один элемент
-                arr = [0];
-                _runner.Reset(SelectedMode, arr, Threshold);
-            }
-
-            RefreshArray();
-            StepHistory.Clear();
-            VariantLog.Clear();
-            HasSteppedOnce = false;
-            VariantMax = arr.Length;
-            StatusLine = string.Empty;
-            UpdateState();
+            _runner.Reset(SelectedMode, arr, Threshold);
         }
-        finally
+        catch (ArgumentException)
         {
-            _isInitializingRunner = false;
+            // PrefixMax с пустым массивом — добавляем хотя бы один элемент
+            if (arr.Length == 0)
+            {
+                arr = [0];
+                _runner.Reset(SelectedMode, arr, Threshold);
+            }
+            else throw;
         }
+
+        RefreshArray();
+        UpdateState();
+        StepHistory.Clear();
+        VariantLog.Clear();
+        HasSteppedOnce = false;
+        VariantMax = arr.Length;
     }
 
     private void ResetLoop()
@@ -313,23 +288,10 @@ public class LoopPanelViewModel : ViewModelBase
 
     private async Task RunAsync()
     {
-        if (_isRunning || IsFinished) return;
-        _isRunning = true;
-        int startVersion = _runVersion;
-        CommandManager.InvalidateRequerySuggested();
-        try
+        while (!IsFinished)
         {
-            while (!IsFinished && _runVersion == startVersion)
-            {
-                Step();
-                if (IsFinished || _runVersion != startVersion) break;
-                await Task.Delay(280);
-            }
-        }
-        finally
-        {
-            _isRunning = false;
-            CommandManager.InvalidateRequerySuggested();
+            Step();
+            await Task.Delay(280);
         }
     }
     //  Вспомогательные
@@ -363,8 +325,6 @@ public class LoopPanelViewModel : ViewModelBase
 
         foreach (var item in Array)
             item.Refresh();
-
-        CommandManager.InvalidateRequerySuggested();
     }
 }
 
@@ -379,28 +339,14 @@ public record LoopModeItem(LoopMode Mode, string DisplayName);
 public class ArrayItem2 : System.ComponentModel.INotifyPropertyChanged
 {
     private readonly LoopPanelViewModel _parent;
-    private int _value;
 
     public int Index { get; }
-
-    public int Value
-    {
-        get => _value;
-        set
-        {
-            if (_value != value)
-            {
-                _value = value;
-                OnPropertyChanged();
-                _parent.OnArrayCellEdited();
-            }
-        }
-    }
+    public int Value { get; set; }
 
     public ArrayItem2(int index, int value, LoopPanelViewModel parent)
     {
         Index   = index;
-        _value  = value;
+        Value   = value;
         _parent = parent;
     }
 

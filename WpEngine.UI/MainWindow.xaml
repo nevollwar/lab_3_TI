@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpEngine.UI"
         xmlns:views="clr-namespace:WpEngine.UI.Views"
         xmlns:payViews="clr-namespace:WpEngine.UI.Views.Payment"
         mc:Ignorable="d"
@@ -117,7 +118,17 @@
         <Grid Grid.Row="1">
             <payViews:PaymentModuleView x:Name="PaymentView" Visibility="Visible" />
             <views:WpCalculatorView x:Name="WpView" Visibility="Collapsed" />
-            <views:LoopsView x:Name="LoopsViewControl" Visibility="Collapsed" />
+            <Border x:Name="LoopsViewControl"
+                    Visibility="Collapsed"
+                    Margin="20,12,20,14"
+                    Background="{StaticResource BgPanel}"
+                    BorderBrush="{StaticResource BorderBase}"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    Padding="18,16"
+                    Effect="{StaticResource SurfaceShadow}">
+                <local:LoopPanel />
+            </Border>
         </Grid>
     </Grid>
 </Window>
