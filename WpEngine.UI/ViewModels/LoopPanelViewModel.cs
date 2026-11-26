@@ -15,6 +15,9 @@ public class LoopPanelViewModel : ViewModelBase
     //зависимости
     private readonly LoopRunner   _runner   = new();
     private readonly LoopVerifier _verifier = new();
+    private bool _isInitializingRunner;
+    private bool _isRunning;
+    private int  _runVersion;
 
     //параметры генерации
     private int      _n         = 6;
@@ -54,11 +57,21 @@ public class LoopPanelViewModel : ViewModelBase
     public int N
     {
         get => _n;
-        set { if (SetProperty(ref _n, value)) _variantMax = Math.Max(1, value); }
+        set { if (SetProperty(ref _n, value)) VariantMax = Math.Max(1, value); }
     }
     public int Min       { get => _min;       set => SetProperty(ref _min, value); }
     public int Max       { get => _max;       set => SetProperty(ref _max, value); }
-    public int Threshold { get => _threshold; set => SetProperty(ref _threshold, value); }
+    public int Threshold
+    {
+        get => _threshold;
+        set
+        {
+            if (SetProperty(ref _threshold, value))
+            {
+                ResetLoop();
+            }
+        }
+    }
 
     public LoopMode SelectedMode
     {
@@ -136,9 +149,9 @@ public class LoopPanelViewModel : ViewModelBase
     public LoopPanelViewModel()
     {
         GenerateCommand = new RelayCommand(_ => Generate());
-        StepCommand     = new RelayCommand(_ => Step(),    _ => !IsFinished && Array.Count > 0);
-        RunCommand      = new RelayCommand(async _ => await RunAsync(), _ => !IsFinished && Array.Count > 0);
-        ResetCommand    = new RelayCommand(_ => { ResetLoop(); HasSteppedOnce = false; });
+        StepCommand     = new RelayCommand(_ => Step(),    _ => !_isRunning && !IsFinished && Array.Count > 0);
+        RunCommand      = new RelayCommand(async _ => await RunAsync(), _ => !_isRunning && !IsFinished && Array.Count > 0);
+        ResetCommand    = new RelayCommand(_ => ResetLoop());
         VerifyCommand   = new RelayCommand(_ => RunVerification());
 
         Generate();
@@ -146,13 +159,28 @@ public class LoopPanelViewModel : ViewModelBase
 
     //  Генерация и инициализация
 
+    internal void OnArrayCellEdited()
+    {
+        if (_isInitializingRunner) return;
+
+        var arr = Array.Select(x => x.Value).ToArray();
+        if (arr.Length == 0)
+            arr = [0];
+
+        InitRunner(arr);
+        StatusLine = "Массив изменён вручную — цикл сброшен в начальное состояние.";
+    }
+
     private void Generate()
     {
         var rng = new Random();
-        int n = Math.Max(1, N);
+        int minN = SelectedMode == LoopMode.PrefixMax ? 1 : 0;
+        int n = Math.Clamp(N, minN, 50);
+        int lo = Math.Min(Min, Max);
+        int hi = Math.Max(Min, Max);
         var arr = new int[n];
         for (int i = 0; i < n; i++)
-            arr[i] = rng.Next(Min, Max + 1);
+            arr[i] = rng.Next(lo, hi + 1);
 
         InitRunner(arr);
         ApplySpec();
@@ -161,33 +189,43 @@ public class LoopPanelViewModel : ViewModelBase
 
     private void InitRunner(int[] arr)
     {
+        if (_isInitializingRunner) return;
+        _isInitializingRunner = true;
+        _runVersion++;
         try
         {
-            _runner.Reset(SelectedMode, arr, Threshold);
-        }
-        catch (ArgumentException)
-        {
-            // PrefixMax с пустым массивом — добавляем хотя бы один элемент
-            if (arr.Length == 0)
+            if (arr.Length == 0 && SelectedMode == LoopMode.PrefixMax)
+                arr = [0];
+
+            try
             {
+                _runner.Reset(SelectedMode, arr, Threshold);
+            }
+            catch (ArgumentException)
+            {
+                // PrefixMax с пустым массивом — добавляем хотя бы один элемент
                 arr = [0];
                 _runner.Reset(SelectedMode, arr, Threshold);
             }
-            else throw;
-        }
 
-        RefreshArray();
-        UpdateState();
-        StepHistory.Clear();
-        VariantLog.Clear();
-        HasSteppedOnce = false;
-        VariantMax = arr.Length;
+            RefreshArray();
+            StepHistory.Clear();
+            VariantLog.Clear();
+            HasSteppedOnce = false;
+            VariantMax = Math.Max(1, arr.Length);
+            StatusLine = string.Empty;
+            UpdateState();
+        }
+        finally
+        {
+            _isInitializingRunner = false;
+        }
     }
 
     private void ResetLoop()
     {
         var arr = _runner.Array.Count > 0 ? _runner.Array.ToArray() : [.. Array.Select(a => a.Value)];
-        if (arr.Length == 0) arr = [0];
+        if (arr.Length == 0 && SelectedMode == LoopMode.PrefixMax) arr = [0];
         InitRunner(arr);
     }
 
@@ -288,10 +326,23 @@ public class LoopPanelViewModel : ViewModelBase
 
     private async Task RunAsync()
     {
-        while (!IsFinished)
+        if (_isRunning || IsFinished) return;
+        _isRunning = true;
+        int startVersion = _runVersion;
+        CommandManager.InvalidateRequerySuggested();
+        try
         {
-            Step();
-            await Task.Delay(280);
+            while (!IsFinished && _runVersion == startVersion)
+            {
+                Step();
+                if (IsFinished || _runVersion != startVersion) break;
+                await Task.Delay(280);
+            }
+        }
+        finally
+        {
+            _isRunning = false;
+            CommandManager.InvalidateRequerySuggested();
         }
     }
     //  Вспомогательные
@@ -325,6 +376,8 @@ public class LoopPanelViewModel : ViewModelBase
 
         foreach (var item in Array)
             item.Refresh();
+
+        CommandManager.InvalidateRequerySuggested();
     }
 }
 
@@ -339,14 +392,28 @@ public record LoopModeItem(LoopMode Mode, string DisplayName);
 public class ArrayItem2 : System.ComponentModel.INotifyPropertyChanged
 {
     private readonly LoopPanelViewModel _parent;
+    private int _value;
 
     public int Index { get; }
-    public int Value { get; set; }
+
+    public int Value
+    {
+        get => _value;
+        set
+        {
+            if (_value != value)
+            {
+                _value = value;
+                OnPropertyChanged();
+                _parent.OnArrayCellEdited();
+            }
+        }
+    }
 
     public ArrayItem2(int index, int value, LoopPanelViewModel parent)
     {
         Index   = index;
-        Value   = value;
+        _value  = value;
         _parent = parent;
     }
 

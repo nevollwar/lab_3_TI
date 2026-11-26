@@ -20,6 +20,8 @@
                                          TrueText="✓ Истинен" FalseText="✗ Нарушен" />
         <conv:BoolToStringConverter      x:Key="BoolToValidText"
                                          TrueText="✓ Доказано" FalseText="✗ Не доказано" />
+        <conv:BoolToStringConverter      x:Key="BoolToStringConverter"
+                                         TrueText="✓" FalseText="✗" />
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"

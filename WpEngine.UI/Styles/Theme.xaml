@@ -222,6 +222,11 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#B8D1FC" />
                         </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#EEF1F6" />
+                            <Setter Property="Foreground" Value="#9AA0A6" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -258,6 +263,12 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#E1E6EF" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#F8FAFD" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="#E1E6EF" />
+                            <Setter Property="Foreground" Value="#9AA0A6" />
+                            <Setter Property="Cursor" Value="Arrow" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
